@@ -4,6 +4,7 @@ import com.example.soft.modules.paramatre_patients.models.ParametresPatientModel
 import com.example.soft.modules.paramatre_patients.services.ParametresPatientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -99,15 +101,32 @@ public class ParametresPatientController {
             service.create(parametre);
             ra.addFlashAttribute("success",
                     "Les paramètres du patient ont été enregistrés avec succès.");
-            return "redirect:/parametres-patient";
-        } catch (IllegalArgumentException | IllegalStateException ex) {
+            return "redirect:/patients";
+        } catch (IllegalArgumentException ex) {
+            // Erreur de validation (champ manquant)
             ra.addFlashAttribute("error", ex.getMessage());
-            return "redirect:/parametres-patient/create";
+            return "redirect:/patients";
+        } catch (IllegalStateException ex) {
+            // Erreur métier (patient inexistant)
+            ra.addFlashAttribute("error", ex.getMessage());
+            return "redirect:/patients";
         } catch (Exception ex) {
             ra.addFlashAttribute("error",
                     "Une erreur inattendue est survenue lors de l'enregistrement.");
-            return "redirect:/parametres-patient/create";
+            return "redirect:/patients";
         }
+    }
+    
+    /**
+     * Endpoint REST pour récupérer les paramètres d'un patient par son code (JSON).
+     * Utilisé par JavaScript pour charger les paramètres dynamiquement.
+     */
+    @GetMapping("/by-code")
+    @ResponseBody
+    public ResponseEntity<List<ParametresPatientModel>> getByCodePatient(
+            @RequestParam String codePatient) {
+        List<ParametresPatientModel> parametres = service.getByCodePatient(codePatient);
+        return ResponseEntity.ok(parametres);
     }
 
     /**
@@ -129,7 +148,7 @@ public class ParametresPatientController {
             ra.addFlashAttribute("error",
                     "Impossible de supprimer ces paramètres.");
         }
-        return "redirect:/parametres-patient";
+        return "redirect:/patients";
     }
 
     /**

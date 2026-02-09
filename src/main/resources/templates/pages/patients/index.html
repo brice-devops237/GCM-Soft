@@ -17,79 +17,1343 @@
         <!-- Content -->
         <div class="content-wrapper">
           <div class="container-xxl flex-grow-1 container-p-y">
-            <div class="card">
-              <div class="card-body demo-vertical-spacing demo-only-element">
-                <div class="d-flex align-items-center justify-content-between">
+            
+            <!-- Messages Flash -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+              <span th:text="${success}"></span>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+              <span th:text="${error}"></span>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
 
-                  <!-- Bouton Ajouter (extrême gauche) -->
+            <!-- Card principale -->
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                  <!-- Bouton Ajouter -->
                   <div>
-                    <button type="button" class="btn btn-primary btn-sm px-3" data-bs-toggle="modal"
-                      data-bs-target="#modalCenter">
+                    <button type="button" class="btn btn-primary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#modalPatient">
                       <span class="bx bx-plus-circle me-1"></span> Ajouter patient
                     </button>
                   </div>
 
-                  <!-- Filtres (extrême droite) -->
+                  <!-- Filtres -->
                   <div class="d-flex align-items-center gap-2">
-
-                    <!-- Date range -->
                     <div class="input-group input-group-sm">
-                      <input type="date" class="form-control" />
+                      <input type="date" class="form-control" id="filterDateDebut" />
                       <span class="input-group-text px-2">au</span>
-                      <input type="date" class="form-control" />
+                      <input type="date" class="form-control" id="filterDateFin" />
                     </div>
-
-                    <!-- Search input -->
-                    <input type="text" class="form-control form-control-sm" placeholder="Rechercher..." />
-
-                    <!-- Button lancer -->
-                    <button type="button" class="btn btn-primary btn-sm px-3">
-                      <span class="bx bx-search-alt me-1"></span>Lancer
-                    </button>
-
+                    <input type="text" class="form-control form-control-sm" id="filterCode" placeholder="Code patient" />
+                    <input type="text" class="form-control form-control-sm" id="filterSearch" placeholder="Nom et prénom..." />
+                    <select class="form-select form-select-sm" id="filterSexe" style="width: auto;">
+                      <option value="">Tous</option>
+                      <option value="Masculin">Masculin</option>
+                      <option value="Féminin">Féminin</option>
+                    </select>
+                    <div class="spinner-border spinner-border-sm d-none" id="filterSpinner" role="status" style="width: 1rem; height: 1rem;">
+                      <span class="visually-hidden">Chargement...</span>
+                    </div>
                   </div>
-
                 </div>
 
-
+                <!-- Table des patients -->
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle" id="patientsTable">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Code</th>
+                        <th>Noms et Prénom</th>
+                        <th>Sexe</th>
+                        <th>Date de naissance</th>
+                        <th>Téléphone</th>
+                        <th>Type</th>
+                        <th>Statut</th>
+                        <th class="text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="patientsTableBody">
+                      <tr th:if="${#lists.isEmpty(patients)}">
+                        <td colspan="8" class="text-center text-muted py-4">
+                          <i class="bx bx-info-circle fs-4 d-block mb-2"></i>
+                          Aucun patient enregistré
+                        </td>
+                      </tr>
+                      <tr th:each="patient : ${patients}" th:data-patient-id="${patient.id}">
+                        <td><span class="badge bg-label-primary" th:text="${patient.code}"></span></td>
+                        <td th:text="${patient.noms}"></td>
+                        <td>
+                          <span class="badge" 
+                                th:classappend="${patient.sexe == 'Masculin'} ? 'bg-label-info' : 'bg-label-danger'"
+                                th:text="${patient.sexe}"></span>
+                        </td>
+                        <td th:text="${#temporals.format(patient.dateNaissance, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${patient.phone}"></td>
+                        <td><span class="badge bg-label-secondary" th:text="${patient.typePatient}"></span></td>
+                        <td>
+                          <span class="badge" 
+                                th:classappend="${patient.estActif} ? 'bg-label-success' : 'bg-label-secondary'"
+                                th:text="${patient.estActif} ? 'Actif' : 'Inactif'"></span>
+                        </td>
+                        <td class="text-center">
+                          <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-label-info btn-edit-patient" 
+                                    th:data-patient-id="${patient.id}"
+                                    title="Modifier">
+                              <i class="bx bx-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-label-success btn-show-parametres" 
+                                    th:data-patient-code="${patient.code}"
+                                    th:data-patient-name="${patient.noms}"
+                                    title="Paramètres">
+                              <i class="bx bx-clipboard"></i>
+                            </button>
+                            <button type="button" class="btn btn-label-danger btn-delete-patient" 
+                                    th:data-patient-id="${patient.id}"
+                                    th:data-patient-name="${patient.noms}"
+                                    title="Supprimer">
+                              <i class="bx bx-trash"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
+
+            <!-- Card Paramètres du patient sélectionné -->
+            <div class="card mt-4" id="parametresCard" style="display: none;">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <h6 class="mb-0">Paramètres du patient : <span id="selectedPatientName"></span></h6>
+                  <button type="button" class="btn btn-success btn-sm" id="btnAddParametres">
+                    <i class="bx bx-plus-circle me-1"></i> Ajouter des paramètres
+                  </button>
+                </div>
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Date</th>
+                        <th>Heure</th>
+                        <th>PAM</th>
+                        <th>FC</th>
+                        <th>FR</th>
+                        <th>Temp (°C)</th>
+                        <th>SaO2</th>
+                        <th>PAS</th>
+                        <th>PAD</th>
+                        <th>Poids (Kg)</th>
+                        <th>Taille (cm)</th>
+                        <th>IMC</th>
+                        <th>Source</th>
+                        <th class="text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="parametresTableBody">
+                      <tr>
+                        <td colspan="14" class="text-center text-muted py-4">
+                          Aucun paramètre enregistré pour ce patient
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
         <!-- Footer -->
         <div th:replace="~{fragments/footer :: footer}"></div>
       </div>
-      <!-- /Content -->
     </div>
-    <!-- /Layout page -->
-  </div>
   </div>
 
-
-  <!-- Modal -->
-  <div class="modal fade" id="modalCenter" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+  <!-- Modal Patient avec Stepper -->
+  <div class="modal fade" id="modalPatient" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="modalCenterTitle">Enregistrer un patient</h5>
+          <h5 class="modal-title" id="modalPatientTitle">Enregistrement d'un patient</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="patientForm" th:action="@{/patients/create}" method="post">
+          <div class="modal-body p-4">
+            <input type="hidden" id="patientId" name="id" />
+            
+            <!-- Stepper -->
+            <ul class="stepper" id="patientStepper">
+              <li class="stepper-item completed">
+                <div class="stepper-wrapper">
+                  <div class="stepper-icon">
+                    <i class="bx bx-user"></i>
+                  </div>
+                  <div class="stepper-label">
+                    <h6 class="mb-0">Informations personnelles</h6>
+                  </div>
+                </div>
+              </li>
+              <li class="stepper-item">
+                <div class="stepper-wrapper">
+                  <div class="stepper-icon">
+                    <i class="bx bx-phone-call"></i>
+                  </div>
+                  <div class="stepper-label">
+                    <h6 class="mb-0">Contact</h6>
+                  </div>
+                </div>
+              </li>
+              <li class="stepper-item">
+                <div class="stepper-wrapper">
+                  <div class="stepper-icon">
+                    <i class="bx bx-file"></i>
+                  </div>
+                  <div class="stepper-label">
+                    <h6 class="mb-0">Informations administratives</h6>
+                  </div>
+                </div>
+              </li>
+            </ul>
+
+            <!-- Step 1: Informations personnelles -->
+            <div class="stepper-content" data-step="1">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Noms et Prénom <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" name="noms" id="noms" required />
+                  <div class="invalid-feedback" id="error-noms"></div>
+                </div>
+                
+                <div class="col-md-3">
+                  <label class="form-label">Sexe <span class="text-danger">*</span></label>
+                  <select class="form-select" name="sexe" id="sexe" required>
+                    <option value="">Sélectionner</option>
+                    <option value="Masculin">Masculin</option>
+                    <option value="Féminin">Féminin</option>
+                  </select>
+                  <div class="invalid-feedback" id="error-sexe"></div>
+                </div>
+                
+                <div class="col-md-3">
+                  <label class="form-label">Date de naissance <span class="text-danger">*</span></label>
+                  <input type="date" class="form-control" name="dateNaissance" id="dateNaissance" required />
+                  <div class="invalid-feedback" id="error-dateNaissance"></div>
+                </div>
+                
+                <div class="col-md-4">
+                  <label class="form-label">Lieu de naissance</label>
+                  <input type="text" class="form-control" name="lieuNaissance" id="lieuNaissance" />
+                </div>
+                
+                <div class="col-md-4">
+                  <label class="form-label">Nationalité</label>
+                  <input type="text" class="form-control" name="nationalite" id="nationalite" />
+                </div>
+                
+                <div class="col-md-4">
+                  <label class="form-label">Groupe sanguin + Rhesus</label>
+                  <select class="form-select" name="groupe" id="groupe">
+                    <option value="">Sélectionner</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label">Adresse</label>
+                  <input type="text" class="form-control" name="adresse" id="adresse" />
+                </div>
+                
+                <div class="col-md-3">
+                  <label class="form-label">Ville</label>
+                  <input type="text" class="form-control" name="ville" id="ville" />
+                </div>
+                
+                <div class="col-md-3">
+                  <label class="form-label">Téléphone <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" name="phone" id="phone" placeholder="+237" required />
+                  <div class="invalid-feedback" id="error-phone"></div>
+                </div>
+                
+                <div class="col-md-4">
+                  <label class="form-label">C.N.I ou N° Passeport</label>
+                  <input type="text" class="form-control" name="cni" id="cni" />
+                </div>
+                
+                <div class="col-md-4">
+                  <label class="form-label">Profession</label>
+                  <input type="text" class="form-control" name="profession" id="profession" />
+                </div>
+                
+                <div class="col-md-4">
+                  <label class="form-label">État matrimonial</label>
+                  <select class="form-select" name="etatMatrimonial" id="etatMatrimonial">
+                    <option value="">Sélectionner</option>
+                    <option value="Célibataire">Célibataire</option>
+                    <option value="Marié(e)">Marié(e)</option>
+                    <option value="Divorcé(e)">Divorcé(e)</option>
+                    <option value="Veuf(ve)">Veuf(ve)</option>
+                  </select>
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label">Nom de la Mère</label>
+                  <input type="text" class="form-control" name="nomMere" id="nomMere" />
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label">Nom du Père</label>
+                  <input type="text" class="form-control" name="nomPere" id="nomPere" />
+                </div>
+                
+                <div class="col-md-4">
+                  <label class="form-label">Ethnie</label>
+                  <input type="text" class="form-control" name="ethnie" id="ethnie" />
+                </div>
+                
+                <div class="col-md-4">
+                  <label class="form-label">Religion</label>
+                  <input type="text" class="form-control" name="religion" id="religion" />
+                </div>
+                
+                <div class="col-md-4">
+                  <label class="form-label">Type de patient</label>
+                  <select class="form-select" name="typePatient" id="typePatient">
+                    <option value="Normal">Normal</option>
+                    <option value="Privé/VIP">Privé/VIP</option>
+                    <option value="Urgent">Urgent</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: Contact d'urgence -->
+            <div class="stepper-content d-none" data-step="2">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Personne à contacter en cas d'urgence</label>
+                  <input type="text" class="form-control" name="urgence" id="urgence" placeholder="Nom et prénom" />
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label">Téléphone d'urgence</label>
+                  <input type="text" class="form-control" name="contactUrgence" id="contactUrgence" placeholder="+237" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3: Informations administratives -->
+            <div class="stepper-content d-none" data-step="3">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">Date de consultation <span class="text-danger">*</span></label>
+                  <input type="date" class="form-control" name="date" id="date" required />
+                  <div class="invalid-feedback" id="error-date"></div>
+                </div>
+                
+                <div class="col-md-4">
+                  <label class="form-label">Consulteur <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" name="consulteur" id="consulteur" required />
+                  <div class="invalid-feedback" id="error-consulteur"></div>
+                </div>
+                
+                <div class="col-md-4">
+                  <label class="form-label">Enregistré par <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" name="printBy" id="printBy" required />
+                  <div class="invalid-feedback" id="error-printBy"></div>
+                </div>
+                
+                <div class="col-md-12">
+                  <label class="form-label">Commentaire</label>
+                  <textarea class="form-control" name="commentaire" id="commentaire" rows="3"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="button" class="btn btn-label-primary" id="btnPrevStep" onclick="prevStep()" style="display: none;">Précédent</button>
+            <button type="button" class="btn btn-label-primary" id="btnNextStep" onclick="nextStep()">Suivant</button>
+            <button type="submit" class="btn btn-primary d-none" id="btnSubmit">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Paramètres Patient -->
+  <div class="modal fade" id="modalParametres" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Saisie des paramètres du patient</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="parametresForm" th:action="@{/parametres-patient/create}" method="post">
+          <div class="modal-body p-4">
+            <input type="hidden" id="parametreId" name="id" />
+            <input type="hidden" id="codePatientParam" name="codePatient" />
+            
+            <div class="alert alert-info mb-4">
+              <i class="bx bx-info-circle me-2"></i>
+              <strong>Patient :</strong> <span id="parametresPatientName"></span> (<span id="parametresPatientCode"></span>)
+            </div>
+            
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label">Date <span class="text-danger">*</span></label>
+                <input type="date" class="form-control" name="date" id="paramDate" required />
+                <div class="invalid-feedback" id="error-paramDate"></div>
+              </div>
+              
+              <div class="col-md-3">
+                <label class="form-label">Heure</label>
+                <input type="time" class="form-control" name="heure" id="paramHeure" />
+              </div>
+              
+              <div class="col-md-3">
+                <label class="form-label">Code traitement</label>
+                <input type="text" class="form-control" name="codeTraitement" id="codeTraitement" />
+              </div>
+              
+              <div class="col-md-3">
+                <label class="form-label">Source <span class="text-danger">*</span></label>
+                <select class="form-select" name="source" id="source" required>
+                  <option value="">Sélectionner</option>
+                  <option value="Consultation">Consultation</option>
+                  <option value="Urgence">Urgence</option>
+                  <option value="Hospitalisation">Hospitalisation</option>
+                  <option value="Suivi">Suivi</option>
+                </select>
+                <div class="invalid-feedback" id="error-source"></div>
+              </div>
+              
+              <!-- Paramètres vitaux -->
+              <div class="col-12 mt-3">
+                <h6 class="mb-3">Paramètres vitaux</h6>
+              </div>
+              
+              <div class="col-md-3">
+                <label class="form-label">PAS (mmHg)</label>
+                <input type="number" class="form-control" name="pas" id="pas" step="1" min="0" />
+              </div>
+              
+              <div class="col-md-3">
+                <label class="form-label">PAD (mmHg)</label>
+                <input type="number" class="form-control" name="pad" id="pad" step="1" min="0" />
+              </div>
+              
+              <div class="col-md-3">
+                <label class="form-label">PAM (mmHg)</label>
+                <input type="number" class="form-control" name="ta" id="pam" step="0.1" min="0" readonly />
+                <small class="text-muted">Calculé automatiquement</small>
+              </div>
+              
+              <div class="col-md-3">
+                <label class="form-label">FC (bpm)</label>
+                <input type="number" class="form-control" name="fc" id="fc" step="1" min="0" />
+              </div>
+              
+              <div class="col-md-3">
+                <label class="form-label">FR (cpm)</label>
+                <input type="number" class="form-control" name="fr" id="fr" step="1" min="0" />
+              </div>
+              
+              <div class="col-md-3">
+                <label class="form-label">Température (°C)</label>
+                <input type="number" class="form-control" name="temp" id="temp" step="0.1" min="0" />
+              </div>
+              
+              <div class="col-md-3">
+                <label class="form-label">SaO2 (%)</label>
+                <input type="text" class="form-control" name="sa02" id="sa02" />
+              </div>
+              
+              <div class="col-md-3">
+                <label class="form-label">Diurèse (ml)</label>
+                <input type="number" class="form-control" name="duirese" id="duirese" step="0.1" min="0" />
+              </div>
+              
+              <!-- Paramètres anthropométriques -->
+              <div class="col-12 mt-3">
+                <h6 class="mb-3">Paramètres anthropométriques</h6>
+              </div>
+              
+              <div class="col-md-4">
+                <label class="form-label">Poids (Kg)</label>
+                <input type="number" class="form-control" name="poids" id="poids" step="0.1" min="0" />
+              </div>
+              
+              <div class="col-md-4">
+                <label class="form-label">Taille (cm)</label>
+                <input type="number" class="form-control" name="taille" id="taille" step="0.1" min="0" />
+              </div>
+              
+              <div class="col-md-4">
+                <label class="form-label">IMC (Kg/m²)</label>
+                <input type="text" class="form-control" name="imc" id="imc" readonly />
+                <small class="text-muted">Calculé automatiquement</small>
+              </div>
+              
+              <!-- Autres paramètres -->
+              <div class="col-12 mt-3">
+                <h6 class="mb-3">Autres paramètres</h6>
+              </div>
+              
+              <div class="col-md-4">
+                <label class="form-label">DDR (Date des dernières règles)</label>
+                <input type="date" class="form-control" name="ddr" id="ddr" />
+              </div>
+              
+              <div class="col-md-4">
+                <label class="form-label">Glycémie (mg/dl)</label>
+                <input type="number" class="form-control" name="glycemie" id="glycemie" step="1" min="0" />
+              </div>
+              
+              <div class="col-md-4">
+                <label class="form-label">PB</label>
+                <input type="text" class="form-control" name="pb" id="pb" />
+              </div>
+              
+              <div class="col-md-4">
+                <label class="form-label">PC</label>
+                <input type="text" class="form-control" name="pc" id="pc" />
+              </div>
+              
+              <div class="col-md-8">
+                <label class="form-label">Autres</label>
+                <textarea class="form-control" name="autre" id="autre" rows="2"></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmation -->
+  <div class="modal fade" id="modalConfirm" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header" id="confirmModalHeader">
+          <h5 class="modal-title" id="confirmModalTitle">Confirmation</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <div class="row">
-          </div>
+          <p id="confirmModalMessage">Êtes-vous sûr de vouloir effectuer cette action ?</p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-label-danger btn-sm" data-bs-dismiss="modal">Annuler</button>
-          <button type="button" class="btn btn-primary btn-sm">Enregistrer</button>
+          <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="button" class="btn btn-danger" id="confirmModalBtn">Confirmer</button>
         </div>
       </div>
     </div>
   </div>
-  </div>
 
   <!-- Scripts -->
   <div th:replace="~{fragments/js :: js}"></div>
+
+  <script>
+    // Variables globales
+    let currentStep = 1;
+    const totalSteps = 3;
+    let currentPatientCode = null;
+    let currentPatientName = null;
+
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', function() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('date')?.setAttribute('value', today);
+      document.getElementById('paramDate')?.setAttribute('value', today);
+      
+      setupCalculations();
+      setupPatientForm();
+      setupParametresForm();
+      setupTableActions();
+      setupRealTimeFilters();
+      
+      // Parser et afficher les erreurs backend
+      parseBackendErrors();
+    });
+
+    // Configuration des actions de la table avec délégation d'événements
+    function setupTableActions() {
+      // Utiliser la délégation d'événements pour gérer les boutons même s'ils sont ajoutés dynamiquement
+      const patientsTable = document.querySelector('.table');
+      
+      if (patientsTable) {
+        // Bouton éditer patient
+        patientsTable.addEventListener('click', function(e) {
+          if (e.target.closest('.btn-edit-patient')) {
+            const btn = e.target.closest('.btn-edit-patient');
+            const patientId = btn.getAttribute('data-patient-id');
+            editPatient(parseInt(patientId));
+          }
+          
+          // Bouton afficher paramètres
+          if (e.target.closest('.btn-show-parametres')) {
+            const btn = e.target.closest('.btn-show-parametres');
+            const code = btn.getAttribute('data-patient-code');
+            const name = btn.getAttribute('data-patient-name');
+            showParametresModal(code, name);
+          }
+          
+          // Bouton supprimer patient
+          if (e.target.closest('.btn-delete-patient')) {
+            const btn = e.target.closest('.btn-delete-patient');
+            const patientId = parseInt(btn.getAttribute('data-patient-id'));
+            const patientName = btn.getAttribute('data-patient-name');
+            confirmDeletePatient(patientId, patientName);
+          }
+        });
+      }
+      
+      // Délégation pour les paramètres (table générée dynamiquement)
+      const parametresCard = document.getElementById('parametresCard');
+      if (parametresCard) {
+        parametresCard.addEventListener('click', function(e) {
+          if (e.target.closest('.btn-delete-parametre')) {
+            const btn = e.target.closest('.btn-delete-parametre');
+            const parametreId = parseInt(btn.getAttribute('data-parametre-id'));
+            deleteParametre(parametreId);
+          }
+        });
+      }
+    }
+
+    // Parser les erreurs backend et les afficher sous les champs
+    function parseBackendErrors() {
+      const errorAlert = document.querySelector('.alert-danger');
+      if (!errorAlert) return;
+      
+      const errorText = errorAlert.textContent.trim();
+      if (!errorText) return;
+      
+      // Mapping des messages d'erreur aux champs
+      const errorMapping = {
+        'Nom du patient obligatoire': 'noms',
+        'Sexe du patient obligatoire': 'sexe',
+        'Date de naissance obligatoire': 'dateNaissance',
+        'Téléphone du patient obligatoire': 'phone',
+        'Nom du consulteur obligatoire': 'consulteur',
+        'Champ printBy obligatoire': 'printBy',
+        'Date d\'enregistrement obligatoire': 'date',
+        'Le code patient doit être renseigné': 'codePatient',
+        'La source des paramètres': 'source'
+      };
+      
+      // Chercher le champ correspondant
+      for (const [message, fieldName] of Object.entries(errorMapping)) {
+        if (errorText.includes(message)) {
+          const field = document.getElementById(fieldName) || document.querySelector(`[name="${fieldName}"]`);
+          if (field) {
+            field.classList.add('is-invalid');
+            const errorDiv = document.getElementById(`error-${fieldName}`);
+            if (errorDiv) {
+              errorDiv.textContent = errorText;
+            } else {
+              // Créer l'élément d'erreur s'il n'existe pas
+              const errorElement = document.createElement('div');
+              errorElement.className = 'invalid-feedback';
+              errorElement.id = `error-${fieldName}`;
+              errorElement.textContent = errorText;
+              field.parentNode.appendChild(errorElement);
+            }
+            
+            // Ouvrir le modal si fermé
+            const modal = document.getElementById('modalPatient');
+            if (modal && !modal.classList.contains('show')) {
+              const bsModal = new bootstrap.Modal(modal);
+              bsModal.show();
+            }
+            
+            // Aller à l'étape appropriée
+            if (fieldName === 'noms' || fieldName === 'sexe' || fieldName === 'dateNaissance' || fieldName === 'phone') {
+              currentStep = 1;
+              resetStepper();
+            } else if (fieldName === 'date' || fieldName === 'consulteur' || fieldName === 'printBy') {
+              currentStep = 3;
+              resetStepper();
+            }
+            
+            // Scroll vers le champ
+            field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            break;
+          }
+        }
+      }
+    }
+
+    // Stepper functions
+    function nextStep() {
+      if (validateStep(currentStep)) {
+        if (currentStep < totalSteps) {
+          document.querySelector(`.stepper-content[data-step="${currentStep}"]`).classList.add('d-none');
+          document.querySelector(`.stepper-item:nth-child(${currentStep})`).classList.remove('active');
+          document.querySelector(`.stepper-item:nth-child(${currentStep})`).classList.add('completed');
+          
+          currentStep++;
+          document.querySelector(`.stepper-content[data-step="${currentStep}"]`).classList.remove('d-none');
+          document.querySelector(`.stepper-item:nth-child(${currentStep})`).classList.add('active');
+          
+          updateStepperButtons();
+        }
+      }
+    }
+
+    function prevStep() {
+      if (currentStep > 1) {
+        document.querySelector(`.stepper-content[data-step="${currentStep}"]`).classList.add('d-none');
+        document.querySelector(`.stepper-item:nth-child(${currentStep})`).classList.remove('active');
+        
+        currentStep--;
+        document.querySelector(`.stepper-content[data-step="${currentStep}"]`).classList.remove('d-none');
+        document.querySelector(`.stepper-item:nth-child(${currentStep})`).classList.add('active');
+        document.querySelector(`.stepper-item:nth-child(${currentStep})`).classList.remove('completed');
+        
+        updateStepperButtons();
+      }
+    }
+
+    function updateStepperButtons() {
+      const btnPrev = document.getElementById('btnPrevStep');
+      const btnNext = document.getElementById('btnNextStep');
+      const btnSubmit = document.getElementById('btnSubmit');
+      
+      btnPrev.style.display = currentStep > 1 ? 'inline-block' : 'none';
+      btnNext.style.display = currentStep < totalSteps ? 'inline-block' : 'none';
+      btnSubmit.classList.toggle('d-none', currentStep < totalSteps);
+    }
+
+    function validateStep(step) {
+      let isValid = true;
+      const stepContent = document.querySelector(`.stepper-content[data-step="${step}"]`);
+      const requiredFields = stepContent.querySelectorAll('[required]');
+      
+      requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+          isValid = false;
+          field.classList.add('is-invalid');
+          const errorDiv = document.getElementById(`error-${field.name}`);
+          if (errorDiv) {
+            errorDiv.textContent = 'Ce champ est obligatoire';
+          }
+        } else {
+          field.classList.remove('is-invalid');
+          const errorDiv = document.getElementById(`error-${field.name}`);
+          if (errorDiv) {
+            errorDiv.textContent = '';
+          }
+        }
+      });
+      
+      return isValid;
+    }
+
+    // Configuration des calculs automatiques
+    function setupCalculations() {
+      const pasInput = document.getElementById('pas');
+      const padInput = document.getElementById('pad');
+      const pamInput = document.getElementById('pam');
+      
+      if (pasInput && padInput && pamInput) {
+        function calculatePAM() {
+          const pas = parseFloat(pasInput.value) || 0;
+          const pad = parseFloat(padInput.value) || 0;
+          if (pas > 0 && pad > 0) {
+            const pam = pad + (pas - pad) / 3;
+            pamInput.value = pam.toFixed(1);
+          } else {
+            pamInput.value = '';
+          }
+        }
+        pasInput.addEventListener('input', calculatePAM);
+        padInput.addEventListener('input', calculatePAM);
+      }
+      
+      const poidsInput = document.getElementById('poids');
+      const tailleInput = document.getElementById('taille');
+      const imcInput = document.getElementById('imc');
+      
+      if (poidsInput && tailleInput && imcInput) {
+        function calculateIMC() {
+          const poids = parseFloat(poidsInput.value) || 0;
+          const taille = parseFloat(tailleInput.value) || 0;
+          if (poids > 0 && taille > 0) {
+            const tailleEnMetres = taille / 100;
+            const imc = poids / (tailleEnMetres * tailleEnMetres);
+            imcInput.value = imc.toFixed(2);
+          } else {
+            imcInput.value = '';
+          }
+        }
+        poidsInput.addEventListener('input', calculateIMC);
+        tailleInput.addEventListener('input', calculateIMC);
+      }
+    }
+
+    // Configuration du formulaire patient
+    function setupPatientForm() {
+      const modalPatient = document.getElementById('modalPatient');
+      const patientForm = document.getElementById('patientForm');
+      const btnAddPatient = document.querySelector('[data-bs-target="#modalPatient"]');
+      
+      if (btnAddPatient) {
+        btnAddPatient.addEventListener('click', function() {
+          patientForm.reset();
+          document.getElementById('patientId').value = '';
+          patientForm.setAttribute('action', '/patients/create');
+          document.getElementById('modalPatientTitle').innerHTML = 'Enregistrement d\'un patient';
+          currentStep = 1;
+          resetStepper();
+          const today = new Date().toISOString().split('T')[0];
+          document.getElementById('date').value = today;
+          clearErrors();
+        });
+      }
+      
+      if (patientForm) {
+        patientForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          if (!validateStep(currentStep)) {
+            return;
+          }
+          
+          const formAction = patientForm.getAttribute('action');
+          const isEdit = formAction.includes('/edit/');
+          const patientName = document.getElementById('noms').value || 'ce patient';
+          
+          showConfirmModal(
+            isEdit ? 'Modifier le patient' : 'Créer un nouveau patient',
+            isEdit 
+              ? `Êtes-vous sûr de vouloir modifier les informations de <strong>${patientName}</strong> ?`
+              : `Êtes-vous sûr de vouloir créer un nouveau patient avec le nom <strong>${patientName}</strong> ?`,
+            function() {
+              patientForm.submit();
+            }
+          );
+        });
+      }
+      
+      if (modalPatient) {
+        modalPatient.addEventListener('hidden.bs.modal', function() {
+          patientForm.reset();
+          document.getElementById('patientId').value = '';
+          patientForm.setAttribute('action', '/patients/create');
+          currentStep = 1;
+          resetStepper();
+          clearErrors();
+        });
+      }
+    }
+
+    function resetStepper() {
+      document.querySelectorAll('.stepper-content').forEach((el, idx) => {
+        el.classList.toggle('d-none', idx !== 0);
+      });
+      document.querySelectorAll('.stepper-item').forEach((el, idx) => {
+        el.classList.remove('active', 'completed');
+        if (idx === 0) el.classList.add('active', 'completed');
+      });
+      updateStepperButtons();
+    }
+
+    function clearErrors() {
+      document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+      document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+    }
+
+    // Configuration du formulaire paramètres
+    function setupParametresForm() {
+      const modalParametres = document.getElementById('modalParametres');
+      const parametresForm = document.getElementById('parametresForm');
+      const btnAddParametres = document.getElementById('btnAddParametres');
+      
+      if (btnAddParametres) {
+        btnAddParametres.addEventListener('click', function() {
+          if (!currentPatientCode) {
+            alert('Veuillez d\'abord sélectionner un patient');
+            return;
+          }
+          showParametresModal(currentPatientCode, currentPatientName);
+        });
+      }
+      
+      if (parametresForm) {
+        parametresForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const patientName = currentPatientName || 'le patient';
+          const source = document.getElementById('source').value || 'non spécifiée';
+          
+          showConfirmModal(
+            'Enregistrer les paramètres',
+            `Êtes-vous sûr de vouloir enregistrer les paramètres cliniques pour <strong>${patientName}</strong> ?<br><small class="text-muted">Source : ${source}</small>`,
+            function() {
+              parametresForm.submit();
+            }
+          );
+        });
+      }
+      
+      if (modalParametres) {
+        modalParametres.addEventListener('hidden.bs.modal', function() {
+          parametresForm.reset();
+          document.getElementById('parametreId').value = '';
+          const today = new Date().toISOString().split('T')[0];
+          document.getElementById('paramDate').value = today;
+          clearErrors();
+        });
+      }
+    }
+
+    // Éditer un patient
+    function editPatient(id) {
+      fetch('/patients/api/' + id)
+        .then(response => response.json())
+        .then(patient => {
+          document.getElementById('patientId').value = patient.id;
+          document.getElementById('noms').value = patient.noms || '';
+          document.getElementById('sexe').value = patient.sexe || '';
+          document.getElementById('dateNaissance').value = patient.dateNaissance || '';
+          document.getElementById('lieuNaissance').value = patient.lieuNaissance || '';
+          document.getElementById('nationalite').value = patient.nationalite || '';
+          document.getElementById('groupe').value = patient.groupe || '';
+          document.getElementById('adresse').value = patient.adresse || '';
+          document.getElementById('ville').value = patient.ville || '';
+          document.getElementById('phone').value = patient.phone || '';
+          document.getElementById('cni').value = patient.cni || '';
+          document.getElementById('profession').value = patient.profession || '';
+          document.getElementById('etatMatrimonial').value = patient.etatMatrimonial || '';
+          document.getElementById('nomMere').value = patient.nomMere || '';
+          document.getElementById('nomPere').value = patient.nomPere || '';
+          document.getElementById('ethnie').value = patient.ethnie || '';
+          document.getElementById('religion').value = patient.religion || '';
+          document.getElementById('typePatient').value = patient.typePatient || 'Normal';
+          document.getElementById('urgence').value = patient.urgence || '';
+          document.getElementById('contactUrgence').value = patient.contactUrgence || '';
+          document.getElementById('date').value = patient.date ? (typeof patient.date === 'string' ? patient.date.split('T')[0] : patient.date) : '';
+          document.getElementById('consulteur').value = patient.consulteur || '';
+          document.getElementById('printBy').value = patient.printBy || '';
+          document.getElementById('commentaire').value = patient.commentaire || '';
+          
+          const form = document.getElementById('patientForm');
+          form.setAttribute('action', '/patients/edit/' + patient.id);
+          document.getElementById('modalPatientTitle').innerHTML = 'Modifier un patient';
+          
+          const modal = new bootstrap.Modal(document.getElementById('modalPatient'));
+          modal.show();
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Erreur lors du chargement du patient');
+        });
+    }
+
+    function showParametresModal(code, name) {
+      currentPatientCode = code;
+      currentPatientName = name;
+      
+      document.getElementById('codePatientParam').value = code;
+      document.getElementById('parametresPatientCode').textContent = code;
+      document.getElementById('parametresPatientName').textContent = name;
+      
+      document.getElementById('parametresCard').style.display = 'block';
+      document.getElementById('selectedPatientName').textContent = name + ' (' + code + ')';
+      
+      loadParametres(code);
+      
+      const modal = new bootstrap.Modal(document.getElementById('modalParametres'));
+      modal.show();
+    }
+
+    function loadParametres(codePatient) {
+      fetch('/parametres-patient/by-code?codePatient=' + codePatient)
+        .then(response => response.json())
+        .then(data => {
+          const tbody = document.getElementById('parametresTableBody');
+          if (data && data.length > 0) {
+            tbody.innerHTML = data.map(param => `
+              <tr>
+                <td>${formatDate(param.date)}</td>
+                <td>${param.heure || '-'}</td>
+                <td>${param.ta || '-'}</td>
+                <td>${param.fc || '-'}</td>
+                <td>${param.fr || '-'}</td>
+                <td>${param.temp || '-'}</td>
+                <td>${param.sa02 || '-'}</td>
+                <td>${param.pas || '-'}</td>
+                <td>${param.pad || '-'}</td>
+                <td>${param.poids || '-'}</td>
+                <td>${param.taille || '-'}</td>
+                <td>${param.imc || '-'}</td>
+                <td><span class="badge bg-label-info">${param.source || '-'}</span></td>
+                <td class="text-center">
+                  <button type="button" class="btn btn-sm btn-label-danger btn-delete-parametre" data-parametre-id="${param.id}">
+                    <i class="bx bx-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            `).join('');
+          } else {
+            tbody.innerHTML = '<tr><td colspan="14" class="text-center text-muted py-4">Aucun paramètre enregistré pour ce patient</td></tr>';
+          }
+        })
+        .catch(error => {
+          console.error('Error loading parametres:', error);
+          document.getElementById('parametresTableBody').innerHTML = '<tr><td colspan="14" class="text-center text-danger py-4">Erreur lors du chargement des paramètres</td></tr>';
+        });
+    }
+
+    function deleteParametre(id) {
+      showConfirmModal(
+        'Supprimer les paramètres',
+        'Êtes-vous sûr de vouloir supprimer ces paramètres cliniques ?<br><small class="text-danger">Cette action est irréversible.</small>',
+        function() {
+          fetch('/parametres-patient/delete/' + id, { method: 'GET' })
+            .then(response => {
+              if (response.ok || response.redirected) {
+                if (currentPatientCode) {
+                  setTimeout(function() {
+                    loadParametres(currentPatientCode);
+                  }, 300);
+                } else {
+                  window.location.reload();
+                }
+              } else {
+                alert('Erreur lors de la suppression');
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              alert('Erreur lors de la suppression');
+            });
+        }
+      );
+    }
+
+    function confirmDeletePatient(id, name) {
+      showConfirmModal(
+        'Supprimer le patient',
+        `Êtes-vous sûr de vouloir supprimer le patient <strong>${name}</strong> ?<br><small class="text-danger">Cette action est irréversible et supprimera également tous ses paramètres.</small>`,
+        function() {
+          window.location.href = '/patients/delete/' + id;
+        }
+      );
+    }
+
+    function showConfirmModal(title, message, onConfirm) {
+      const modal = document.getElementById('modalConfirm');
+      document.getElementById('confirmModalTitle').textContent = title;
+      document.getElementById('confirmModalMessage').innerHTML = message;
+      
+      const newBtn = document.getElementById('confirmModalBtn').cloneNode(true);
+      document.getElementById('confirmModalBtn').parentNode.replaceChild(newBtn, document.getElementById('confirmModalBtn'));
+      
+      newBtn.addEventListener('click', function() {
+        const bsModal = bootstrap.Modal.getInstance(modal);
+        bsModal.hide();
+        if (onConfirm) onConfirm();
+      });
+      
+      const bsModal = new bootstrap.Modal(modal);
+      bsModal.show();
+    }
+
+    // Configuration des filtres en temps réel
+    let searchTimeout = null;
+    let currentSearchRequest = null;
+
+    function setupRealTimeFilters() {
+      const filterCode = document.getElementById('filterCode');
+      const filterSearch = document.getElementById('filterSearch');
+      const filterSexe = document.getElementById('filterSexe');
+      const filterDateDebut = document.getElementById('filterDateDebut');
+      const filterDateFin = document.getElementById('filterDateFin');
+      const filterSpinner = document.getElementById('filterSpinner');
+
+      // Fonction de recherche avec debounce
+      function performSearch() {
+        // Annuler la requête précédente si elle existe
+        if (currentSearchRequest) {
+          currentSearchRequest.abort();
+        }
+
+        // Afficher le spinner
+        filterSpinner.classList.remove('d-none');
+
+        // Construire les paramètres de recherche
+        const params = new URLSearchParams();
+        const code = filterCode?.value.trim();
+        const noms = filterSearch?.value.trim();
+        const sexe = filterSexe?.value;
+        const dateDebut = filterDateDebut?.value;
+        const dateFin = filterDateFin?.value;
+
+        if (code) params.append('code', code);
+        if (noms) params.append('noms', noms);
+        if (sexe) params.append('sexe', sexe);
+        if (dateDebut) params.append('dateDebut', dateDebut);
+        if (dateFin) params.append('dateFin', dateFin);
+
+        // Effectuer la requête AJAX
+        const controller = new AbortController();
+        currentSearchRequest = controller;
+
+        // Construire l'URL avec ou sans paramètres
+        const url = params.toString() 
+          ? '/patients/api/search?' + params.toString()
+          : '/patients/api/search';
+
+        fetch(url, {
+          method: 'GET',
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json'
+          }
+        })
+        .then(response => {
+          if (!response.ok) throw new Error('Erreur de recherche');
+          return response.json();
+        })
+        .then(patients => {
+          updatePatientsTable(patients);
+          filterSpinner.classList.add('d-none');
+          currentSearchRequest = null;
+        })
+        .catch(error => {
+          if (error.name !== 'AbortError') {
+            console.error('Erreur lors de la recherche:', error);
+            filterSpinner.classList.add('d-none');
+          }
+          currentSearchRequest = null;
+        });
+      }
+
+      // Debounce function - attendre 250ms après la dernière frappe pour réduire la latence
+      function debouncedSearch() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(performSearch, 250);
+      }
+
+      // Attacher les event listeners
+      if (filterCode) {
+        filterCode.addEventListener('input', debouncedSearch);
+      }
+      if (filterSearch) {
+        filterSearch.addEventListener('input', debouncedSearch);
+      }
+      if (filterSexe) {
+        filterSexe.addEventListener('change', performSearch);
+      }
+      if (filterDateDebut) {
+        filterDateDebut.addEventListener('change', performSearch);
+      }
+      if (filterDateFin) {
+        filterDateFin.addEventListener('change', performSearch);
+      }
+    }
+
+    // Mettre à jour la table des patients
+    function updatePatientsTable(patients) {
+      const tbody = document.getElementById('patientsTableBody');
+      
+      if (!tbody) return;
+
+      if (!patients || patients.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="text-center text-muted py-4">
+              <i class="bx bx-info-circle fs-4 d-block mb-2"></i>
+              Aucun patient trouvé
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      // Fonction d'échappement HTML
+      const escapeHtml = (text) => {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      };
+
+      tbody.innerHTML = patients.map(patient => {
+        const sexeClass = patient.sexe === 'Masculin' ? 'bg-label-info' : 'bg-label-danger';
+        const statutClass = patient.estActif ? 'bg-label-success' : 'bg-label-secondary';
+        const statutText = patient.estActif ? 'Actif' : 'Inactif';
+        const dateNaissance = patient.dateNaissance ? formatDate(patient.dateNaissance) : '-';
+        
+        const code = escapeHtml(patient.code || '');
+        const noms = escapeHtml(patient.noms || '');
+        const sexe = escapeHtml(patient.sexe || '');
+        const phone = escapeHtml(patient.phone || '');
+        const typePatient = escapeHtml(patient.typePatient || '');
+
+        return `
+          <tr>
+            <td><span class="badge bg-label-primary">${code}</span></td>
+            <td>${noms}</td>
+            <td>
+              <span class="badge ${sexeClass}">${sexe}</span>
+            </td>
+            <td>${dateNaissance}</td>
+            <td>${phone}</td>
+            <td><span class="badge bg-label-secondary">${typePatient}</span></td>
+            <td>
+              <span class="badge ${statutClass}">${statutText}</span>
+            </td>
+            <td class="text-center">
+              <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-label-info btn-edit-patient" 
+                        data-patient-id="${patient.id}"
+                        title="Modifier">
+                  <i class="bx bx-edit"></i>
+                </button>
+                <button type="button" class="btn btn-label-success btn-show-parametres" 
+                        data-patient-code="${code}"
+                        data-patient-name="${noms}"
+                        title="Paramètres">
+                  <i class="bx bx-clipboard"></i>
+                </button>
+                <button type="button" class="btn btn-label-danger btn-delete-patient" 
+                        data-patient-id="${patient.id}"
+                        data-patient-name="${noms}"
+                        title="Supprimer">
+                  <i class="bx bx-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      // Réattacher les event listeners après mise à jour de la table
+      setupTableActions();
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return '-';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR');
+    }
+  </script>
+
+  <style>
+    /* Stepper Styles */
+    .stepper {
+      display: flex;
+      justify-content: space-between;
+      list-style: none;
+      padding: 0;
+      margin-bottom: 2rem;
+    }
+
+    .stepper-item {
+      flex: 1;
+      position: relative;
+    }
+
+    .stepper-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      background-color: #e0e0e0;
+      z-index: 0;
+    }
+
+    .stepper-item.completed:not(:last-child)::after {
+      background-color: #696cff;
+    }
+
+    .stepper-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stepper-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #697a8d;
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .stepper-item.active .stepper-icon {
+      background-color: #696cff;
+      color: white;
+    }
+
+    .stepper-item.completed .stepper-icon {
+      background-color: #696cff;
+      color: white;
+    }
+
+    .stepper-label h6 {
+      font-size: 0.875rem;
+      color: #697a8d;
+      margin: 0;
+    }
+
+    .stepper-item.active .stepper-label h6,
+    .stepper-item.completed .stepper-label h6 {
+      color: #696cff;
+      font-weight: 600;
+    }
+
+    .stepper-content {
+      min-height: 300px;
+    }
+
+    .card {
+      border-radius: 8px;
+    }
+
+    .table th {
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: #697a8d;
+    }
+
+    #filterSpinner {
+      width: 1rem;
+      height: 1rem;
+      border-width: 0.15em;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: #696cff;
+      box-shadow: 0 0 0 0.2rem rgba(105, 108, 255, 0.1);
+    }
+  </style>
 </body>
 
 </html>
