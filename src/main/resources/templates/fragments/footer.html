@@ -1,0 +1,21 @@
+<!-- src/main/resources/templates/fragments/footer.html -->
+<footer class="content-footer footer bg-footer-theme" th:fragment="footer">
+    <div class="container-xxl">
+        <div class="footer-container d-flex align-items-center justify-content-between py-4 flex-md-row flex-column">
+
+            <!-- Copyright -->
+            <div class="mb-2 mb-md-0">
+                Copyright
+                © <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}"></span>,
+                <a href="#" target="_blank" class="footer-link">GEC Informatique</a>
+            </div>
+
+            <!-- Liens supplémentaires -->
+            <div class="d-none d-lg-inline-block">
+                <a href="#"
+                   target="_blank" class="footer-link me-6">Documentation</a>
+            </div>
+
+        </div>
+    </div>
+</footer>
