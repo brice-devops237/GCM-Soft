@@ -7,6 +7,7 @@ window.PatientsParametres = (function () {
         setupCalculations();
     }
 
+    // Affiche la section paramètres et masque le module liste des patients
     function show(code, name) {
         currentCode = code;
         currentName = name;
@@ -15,12 +16,14 @@ window.PatientsParametres = (function () {
         document.getElementById('parametresPatientCode').textContent = code;
         document.getElementById('parametresPatientName').textContent = name;
 
-        document.getElementById('parametresCard').style.display = 'block';
         document.getElementById('selectedPatientName').textContent =
             `${name} (${code})`;
 
+        const patientsModuleCard = document.getElementById('patientsModuleCard');
+        if (patientsModuleCard) patientsModuleCard.style.display = 'none';
+        document.getElementById('parametresCard').style.display = 'block';
+
         load();
-        new bootstrap.Modal(document.getElementById('modalParametres')).show();
     }
 
     function load() {

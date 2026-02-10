@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="fr" class="layout-navbar-fixed layout-menu-fixed layout-compact" data-bs-theme="light">
+<html lang="fr" class="layout-navbar-fixed layout-menu-fixed layout-compact" data-bs-theme="light"
+  data-template="default" data-assets-path="/assets/">
 
 <head th:replace="~{fragments/head :: head}"></head>
 
@@ -18,18 +19,16 @@
         <div class="content-wrapper">
           <div class="container-xxl flex-grow-1 container-p-y">
 
-            <!-- Messages Flash -->
-            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <!-- Messages Flash : masqués, affichés uniquement en toast par showFlashAsToasts() -->
+            <div th:if="${success}" class="alert alert-success d-none flash-message" role="alert" data-flash="success">
               <span th:text="${success}"></span>
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div th:if="${error}" class="alert alert-danger d-none flash-message" role="alert" data-flash="error">
               <span th:text="${error}"></span>
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
 
-            <!-- Card principale -->
-            <div class="card">
+            <!-- Module Gestion des patients (masqué quand la section Paramètres est affichée) -->
+            <div class="card" id="patientsModuleCard">
               <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between mb-4">
                   <!-- Bouton Ajouter -->
@@ -64,65 +63,7 @@
                 </div>
 
                 <!-- Table des patients -->
-                <div class="table-responsive">
-                  <table class="table table-hover align-middle" id="patientsTable">
-                    <thead class="table-light">
-                      <tr>
-                        <th>Code</th>
-                        <th>Noms et Prénom</th>
-                        <th>Sexe</th>
-                        <th>Date de naissance</th>
-                        <th>Téléphone</th>
-                        <th>Type</th>
-                        <th>Statut</th>
-                        <th class="text-center">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody id="patientsTableBody">
-                      <tr th:if="${#lists.isEmpty(patients)}">
-                        <td colspan="8" class="text-center text-muted py-4">
-                          <i class="bx bx-info-circle fs-4 d-block mb-2"></i>
-                          Aucun patient enregistré
-                        </td>
-                      </tr>
-                      <tr th:each="patient : ${patients}" th:data-patient-id="${patient.id}">
-                        <td><span class="badge bg-label-primary" th:text="${patient.code}"></span></td>
-                        <td th:text="${patient.noms}"></td>
-                        <td>
-                          <span class="badge"
-                            th:classappend="${patient.sexe == 'Masculin'} ? 'bg-label-info' : 'bg-label-danger'"
-                            th:text="${patient.sexe}"></span>
-                        </td>
-                        <td th:text="${#temporals.format(patient.dateNaissance, 'dd/MM/yyyy')}"></td>
-                        <td th:text="${patient.phone}"></td>
-                        <td><span class="badge bg-label-secondary" th:text="${patient.typePatient}"></span></td>
-                        <td>
-                          <span class="badge"
-                            th:classappend="${patient.estActif} ? 'bg-label-success' : 'bg-label-secondary'"
-                            th:text="${patient.estActif} ? 'Actif' : 'Inactif'"></span>
-                        </td>
-                        <td class="text-center">
-                          <div class="btn-group btn-group-sm" role="group">
-                            <button type="button" class="btn btn-label-info btn-edit-patient"
-                              th:data-patient-id="${patient.id}" title="Modifier">
-                              <i class="bx bx-edit"></i>
-                            </button>
-                            <button type="button" class="btn btn-label-success btn-show-parametres"
-                              th:data-patient-code="${patient.code}" th:data-patient-name="${patient.noms}"
-                              title="Paramètres">
-                              <i class="bx bx-clipboard"></i>
-                            </button>
-                            <button type="button" class="btn btn-label-danger btn-delete-patient"
-                              th:data-patient-id="${patient.id}" th:data-patient-name="${patient.noms}"
-                              title="Supprimer">
-                              <i class="bx bx-trash"></i>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                <div th:replace="~{fragments/patients/content/patients-table :: patientsTable}"></div>
               </div>
             </div>
 
@@ -131,33 +72,41 @@
               <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                   <h6 class="mb-0">Paramètres du patient : <span id="selectedPatientName"></span></h6>
-                  <button type="button" class="btn btn-success btn-sm" id="btnAddParametres">
-                    <i class="bx bx-plus-circle me-1"></i> Ajouter des paramètres
-                  </button>
+                  <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-outline-danger btn-sm" id="btnCloseParametresCard"
+                      title="Fermer la section">
+                      Fermer
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm" id="btnAddParametres">
+                      Ajouter
+                    </button>
+                  </div>
                 </div>
                 <div class="table-responsive">
-                  <table class="table table-hover align-middle">
-                    <thead class="table-light">
+                  <table class="table table-sm table-hover align-middle" id="parametresTable"
+                    style="font-size: 0.8rem;">
+                    <thead class="table-dark" style="font-size: 0.75rem;">
                       <tr>
-                        <th>Date</th>
-                        <th>Heure</th>
-                        <th>PAM</th>
-                        <th>FC</th>
-                        <th>FR</th>
-                        <th>Temp (°C)</th>
-                        <th>SaO2</th>
-                        <th>PAS</th>
-                        <th>PAD</th>
-                        <th>Poids (Kg)</th>
-                        <th>Taille (cm)</th>
-                        <th>IMC</th>
-                        <th>Source</th>
-                        <th class="text-center">Actions</th>
+                        <th style="font-size: 0.75rem;" class="text-white fw-bold">Date</th>
+                        <th style="font-size: 0.75rem;" class="text-white fw-bold">Heure</th>
+                        <th style="font-size: 0.75rem;" class="text-white fw-bold">PAM</th>
+                        <th style="font-size: 0.75rem;" class="text-white fw-bold">FC</th>
+                        <th style="font-size: 0.75rem;" class="text-white fw-bold">FR</th>
+                        <th style="font-size: 0.75rem;" class="text-white fw-bold">Temp</th>
+                        <th style="font-size: 0.75rem;" class="text-white fw-bold">SaO2</th>
+                        <th style="font-size: 0.75rem;" class="text-white fw-bold">PAS</th>
+                        <th style="font-size: 0.75rem;" class="text-white fw-bold">PAD</th>
+                        <th style="font-size: 0.75rem;" class="text-white fw-bold">Poids</th>
+                        <th style="font-size: 0.75rem;" class="text-white fw-bold">Taille</th>
+                        <th style="font-size: 0.75rem;" class="text-white fw-bold">IMC</th>
+                        <th style="font-size: 0.75rem;" class="text-white fw-bold">Source</th>
+                        <th style="font-size: 0.75rem;" class="text-center text-white fw-bold">Actions</th>
                       </tr>
                     </thead>
                     <tbody id="parametresTableBody">
                       <tr>
                         <td colspan="14" class="text-center text-muted py-4">
+                          <i class="bx bx-info-circle fs-4 d-block mb-2"></i>
                           Aucun paramètre enregistré pour ce patient
                         </td>
                       </tr>
@@ -211,6 +160,27 @@
     let currentPatientCode = null;
     let currentPatientName = null;
 
+    // Afficher les messages flash (success/error) en toasts et masquer les alertes inline
+    function showFlashAsToasts() {
+      if (typeof window.AppToasts === 'undefined') return;
+      var successEl = document.querySelector('.alert-success');
+      if (successEl) {
+        var text = (successEl.querySelector('span') || successEl).textContent.trim();
+        if (text) {
+          window.AppToasts.success(text);
+          successEl.remove();
+        }
+      }
+      var errorEl = document.querySelector('.alert-danger');
+      if (errorEl) {
+        var errText = (errorEl.querySelector('span') || errorEl).textContent.trim();
+        if (errText) {
+          window.AppToasts.error(errText);
+          errorEl.remove();
+        }
+      }
+    }
+
     // Initialisation
     document.addEventListener('DOMContentLoaded', function () {
       const today = new Date().toISOString().split('T')[0];
@@ -223,8 +193,10 @@
       setupTableActions();
       setupRealTimeFilters();
 
-      // Parser et afficher les erreurs backend
+      // Parser et afficher les erreurs backend sous les champs
       parseBackendErrors();
+      // Afficher les messages flash en toasts (success/error) et retirer les alertes inline
+      showFlashAsToasts();
     });
 
     // Configuration des actions de la table avec délégation d'événements
@@ -246,7 +218,7 @@
             const btn = e.target.closest('.btn-show-parametres');
             const code = btn.getAttribute('data-patient-code');
             const name = btn.getAttribute('data-patient-name');
-            showParametresModal(code, name);
+            showParametresCard(code, name);
           }
 
           // Bouton supprimer patient
@@ -523,6 +495,7 @@
           updatePatientSubmitButton();
           var lbl = document.getElementById('btnSubmitLabel');
           if (lbl) lbl.textContent = 'Enregistrer';
+          if (typeof syncRelationUrgenceHidden === 'function') syncRelationUrgenceHidden();
         });
       }
 
@@ -546,6 +519,7 @@
               ? `Êtes-vous sûr de vouloir modifier les informations de <strong>${patientName}</strong> ?`
               : `Êtes-vous sûr de vouloir créer un nouveau patient avec le nom <strong>${patientName}</strong> ?`,
             function () {
+              if (typeof syncRelationUrgenceHidden === 'function') syncRelationUrgenceHidden();
               patientForm.submit();
             }
           );
@@ -571,6 +545,15 @@
       }
     }
 
+    function syncRelationUrgenceHidden() {
+      var relationSelect = document.getElementById('relationUrgence');
+      var hidden = document.getElementById('relationUrgenceHidden');
+      var autreInput = document.getElementById('relationUrgenceAutre');
+      if (!relationSelect || !hidden) return;
+      var v = relationSelect.value === 'Autre' && autreInput ? autreInput.value.trim() : relationSelect.value;
+      hidden.value = v || '';
+    }
+
     function setupRelationUrgenceAutre() {
       var relationSelect = document.getElementById('relationUrgence');
       var wrap = document.getElementById('relationUrgenceAutreWrap');
@@ -585,6 +568,7 @@
         } else {
           displayRelation.textContent = relationSelect.value ? relationSelect.options[relationSelect.selectedIndex].text : '\u2014';
         }
+        syncRelationUrgenceHidden();
       }
       relationSelect.addEventListener('change', function () {
         if (relationSelect.value === 'Autre') {
@@ -616,33 +600,49 @@
       document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
     }
 
+    // Fermer la section paramètres et réafficher le module liste des patients
+    function closeParametresCard() {
+      const parametresCard = document.getElementById('parametresCard');
+      const patientsModuleCard = document.getElementById('patientsModuleCard');
+      if (parametresCard) parametresCard.style.display = 'none';
+      if (patientsModuleCard) patientsModuleCard.style.display = 'block';
+    }
+
     // Configuration du formulaire paramètres
     function setupParametresForm() {
       const modalParametres = document.getElementById('modalParametres');
       const parametresForm = document.getElementById('parametresForm');
       const btnAddParametres = document.getElementById('btnAddParametres');
+      const btnCloseParametresCard = document.getElementById('btnCloseParametresCard');
 
       if (btnAddParametres) {
         btnAddParametres.addEventListener('click', function () {
           if (!currentPatientCode) {
-            alert('Veuillez d\'abord sélectionner un patient');
+            window.AppToasts && window.AppToasts.warning('Veuillez d\'abord sélectionner un patient.');
             return;
           }
-          showParametresModal(currentPatientCode, currentPatientName);
+          openParametresModal();
         });
+      }
+
+      if (btnCloseParametresCard) {
+        btnCloseParametresCard.addEventListener('click', closeParametresCard);
       }
 
       if (parametresForm) {
         parametresForm.addEventListener('submit', function (e) {
           e.preventDefault();
           const patientName = currentPatientName || 'le patient';
-          const source = document.getElementById('source').value || 'non spécifiée';
+          const sourceEl = document.getElementById('source');
+          const source = (sourceEl && sourceEl.value) ? sourceEl.value : 'non spécifiée';
 
           showConfirmModal(
             'Enregistrer les paramètres',
             `Êtes-vous sûr de vouloir enregistrer les paramètres cliniques pour <strong>${patientName}</strong> ?<br><small class="text-muted">Source : ${source}</small>`,
             function () {
-              parametresForm.submit();
+              // Soumission après fermeture du modal de confirmation pour éviter tout blocage
+              const form = document.getElementById('parametresForm');
+              if (form) setTimeout(function () { form.submit(); }, 150);
             }
           );
         });
@@ -687,6 +687,22 @@
           document.getElementById('typePatient').value = patient.typePatient || 'Normal';
           document.getElementById('urgence').value = patient.urgence || '';
           document.getElementById('contactUrgence').value = patient.contactUrgence || '';
+          var relationVal = patient.relationUrgence || '';
+          var relationSelect = document.getElementById('relationUrgence');
+          var relationWrap = document.getElementById('relationUrgenceAutreWrap');
+          var relationAutre = document.getElementById('relationUrgenceAutre');
+          var relationHidden = document.getElementById('relationUrgenceHidden');
+          var opts = relationSelect ? Array.from(relationSelect.options).map(function (o) { return o.value; }) : [];
+          if (relationVal && opts.indexOf(relationVal) >= 0) {
+            relationSelect.value = relationVal;
+            if (relationWrap) relationWrap.classList.add('d-none');
+            if (relationAutre) relationAutre.value = '';
+          } else {
+            relationSelect.value = 'Autre';
+            if (relationWrap) relationWrap.classList.remove('d-none');
+            if (relationAutre) relationAutre.value = relationVal;
+          }
+          if (relationHidden) relationHidden.value = relationVal;
           document.getElementById('date').value = patient.date ? (typeof patient.date === 'string' ? patient.date.split('T')[0] : patient.date) : '';
           document.getElementById('consulteur').value = patient.consulteur || '';
           document.getElementById('printBy').value = patient.printBy || '';
@@ -696,7 +712,7 @@
           const d2 = document.getElementById('contactRelationDisplay');
           const d3 = document.getElementById('contactTelDisplay');
           if (d1) d1.textContent = patient.urgence || '—';
-          if (d2) d2.textContent = '—';
+          if (d2) d2.textContent = relationVal || '—';
           if (d3) d3.textContent = patient.contactUrgence || '—';
 
           const form = document.getElementById('patientForm');
@@ -711,11 +727,12 @@
         })
         .catch(error => {
           console.error('Error:', error);
-          alert('Erreur lors du chargement du patient');
+          window.AppToasts && window.AppToasts.error('Impossible de charger les données du patient.');
         });
     }
 
-    function showParametresModal(code, name) {
+    // Affiche la section paramètres et masque le module liste des patients
+    function showParametresCard(code, name) {
       currentPatientCode = code;
       currentPatientName = name;
 
@@ -723,50 +740,102 @@
       document.getElementById('parametresPatientCode').textContent = code;
       document.getElementById('parametresPatientName').textContent = name;
 
-      document.getElementById('parametresCard').style.display = 'block';
       document.getElementById('selectedPatientName').textContent = name + ' (' + code + ')';
 
-      loadParametres(code);
+      document.getElementById('patientsModuleCard').style.display = 'none';
+      document.getElementById('parametresCard').style.display = 'block';
 
-      const modal = new bootstrap.Modal(document.getElementById('modalParametres'));
-      modal.show();
+      loadParametres(code);
+    }
+
+    // Ouvre le modal paramètres (à appeler depuis la card uniquement)
+    function openParametresModal() {
+      const codePatientParam = document.getElementById('codePatientParam');
+      const paramDateEl = document.getElementById('paramDate');
+      const sourceEl = document.getElementById('source');
+      if (currentPatientCode && codePatientParam) codePatientParam.value = currentPatientCode;
+      const today = new Date().toISOString().split('T')[0];
+      if (paramDateEl) paramDateEl.value = today;
+      if (sourceEl) sourceEl.value = sourceEl.value || 'Consultation';
+      const modalEl = document.getElementById('modalParametres');
+      if (modalEl) {
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+      }
     }
 
     function loadParametres(codePatient) {
-      fetch('/parametres-patient/by-code?codePatient=' + codePatient)
+      fetch('/parametres-patient/by-code?codePatient=' + encodeURIComponent(codePatient))
         .then(response => response.json())
         .then(data => {
           const tbody = document.getElementById('parametresTableBody');
+          if (!tbody) return;
           if (data && data.length > 0) {
-            tbody.innerHTML = data.map(param => `
-              <tr>
-                <td>${formatDate(param.date)}</td>
-                <td>${param.heure || '-'}</td>
-                <td>${param.ta || '-'}</td>
-                <td>${param.fc || '-'}</td>
-                <td>${param.fr || '-'}</td>
-                <td>${param.temp || '-'}</td>
-                <td>${param.sa02 || '-'}</td>
-                <td>${param.pas || '-'}</td>
-                <td>${param.pad || '-'}</td>
-                <td>${param.poids || '-'}</td>
-                <td>${param.taille || '-'}</td>
-                <td>${param.imc || '-'}</td>
-                <td><span class="badge bg-label-info">${param.source || '-'}</span></td>
+            const escapeHtml = (t) => { if (t == null) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; };
+            tbody.innerHTML = data.map(param => {
+              const date = formatDate(param.date);
+              const heure = escapeHtml(param.heure || '-');
+              const ta = param.ta != null ? param.ta : '-';
+              const fc = param.fc != null ? param.fc : '-';
+              const fr = param.fr != null ? param.fr : '-';
+              const temp = escapeHtml(param.temp || '-');
+              const sa02 = escapeHtml(param.sa02 || '-');
+              const pas = param.pas != null ? param.pas : '-';
+              const pad = param.pad != null ? param.pad : '-';
+              const poids = escapeHtml(param.poids || '-');
+              const taille = escapeHtml(param.taille || '-');
+              const imc = escapeHtml(param.imc || '-');
+              const source = escapeHtml(param.source || '-');
+              const id = param.id;
+              return `
+              <tr data-parametre-id="${id}">
+                <td>${date}</td>
+                <td>${heure}</td>
+                <td>${ta}</td>
+                <td>${fc}</td>
+                <td>${fr}</td>
+                <td>${temp}</td>
+                <td>${sa02}</td>
+                <td>${pas}</td>
+                <td>${pad}</td>
+                <td>${poids}</td>
+                <td>${taille}</td>
+                <td>${imc}</td>
+                <td><span>${source}</span></td>
                 <td class="text-center">
-                  <button type="button" class="btn btn-sm btn-label-danger btn-delete-parametre" data-parametre-id="${param.id}">
-                    <i class="bx bx-trash"></i>
-                  </button>
+                  <div class="dropdown">
+                    <button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill dropdown-toggle hide-arrow"
+                      data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
+                      <i class="bx bx-dots-vertical-rounded"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                      <li>
+                        <button type="button" class="dropdown-item btn-delete-parametre d-flex align-items-center text-danger"
+                          data-parametre-id="${id}">
+                          <i class="bx bx-trash me-2"></i> Supprimer
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
                 </td>
               </tr>
-            `).join('');
+            `;
+            }).join('');
           } else {
-            tbody.innerHTML = '<tr><td colspan="14" class="text-center text-muted py-4">Aucun paramètre enregistré pour ce patient</td></tr>';
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="14" class="text-center text-muted py-4">
+                  <i class="bx bx-info-circle fs-4 d-block mb-2"></i>
+                  Aucun paramètre enregistré pour ce patient
+                </td>
+              </tr>
+            `;
           }
         })
         .catch(error => {
           console.error('Error loading parametres:', error);
-          document.getElementById('parametresTableBody').innerHTML = '<tr><td colspan="14" class="text-center text-danger py-4">Erreur lors du chargement des paramètres</td></tr>';
+          const tbody = document.getElementById('parametresTableBody');
+          if (tbody) tbody.innerHTML = '<tr><td colspan="14" class="text-center text-danger py-4">Erreur lors du chargement des paramètres</td></tr>';
         });
     }
 
@@ -786,12 +855,12 @@
                   window.location.reload();
                 }
               } else {
-                alert('Erreur lors de la suppression');
+                window.AppToasts && window.AppToasts.error('La suppression des paramètres a échoué.');
               }
             })
             .catch(error => {
               console.error('Error:', error);
-              alert('Erreur lors de la suppression');
+              window.AppToasts && window.AppToasts.error('La suppression des paramètres a échoué.');
             });
         }
       );
@@ -919,7 +988,7 @@
       }
     }
 
-    // Mettre à jour la table des patients
+    // Mettre à jour la table des patients (même structure que le fragment patients-table.html)
     function updatePatientsTable(patients) {
       const tbody = document.getElementById('patientsTableBody');
 
@@ -937,65 +1006,67 @@
         return;
       }
 
-      // Fonction d'échappement HTML
       const escapeHtml = (text) => {
-        if (!text) return '';
+        if (text == null) return '';
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
       };
 
       tbody.innerHTML = patients.map(patient => {
-        const sexeClass = patient.sexe === 'Masculin' ? 'bg-label-info' : 'bg-label-danger';
-        const statutClass = patient.estActif ? 'bg-label-success' : 'bg-label-secondary';
-        const statutText = patient.estActif ? 'Actif' : 'Inactif';
         const dateNaissance = patient.dateNaissance ? formatDate(patient.dateNaissance) : '-';
-
+        const dateCreation = patient.dateCreation ? formatDate(patient.dateCreation) : '-';
         const code = escapeHtml(patient.code || '');
         const noms = escapeHtml(patient.noms || '');
         const sexe = escapeHtml(patient.sexe || '');
         const phone = escapeHtml(patient.phone || '');
         const typePatient = escapeHtml(patient.typePatient || '');
+        const id = patient.id;
+        const dataName = escapeHtml(patient.noms || '');
 
         return `
-          <tr>
-            <td><span class="badge bg-label-primary">${code}</span></td>
+          <tr data-patient-id="${id}">
+            <td><span>${code}</span></td>
             <td>${noms}</td>
-            <td>
-              <span class="badge ${sexeClass}">${sexe}</span>
-            </td>
+            <td><span>${sexe}</span></td>
             <td>${dateNaissance}</td>
             <td>${phone}</td>
-            <td><span class="badge bg-label-secondary">${typePatient}</span></td>
-            <td>
-              <span class="badge ${statutClass}">${statutText}</span>
-            </td>
+            <td><span>${typePatient}</span></td>
+            <td>${dateCreation}</td>
             <td class="text-center">
-              <div class="btn-group btn-group-sm" role="group">
-                <button type="button" class="btn btn-label-info btn-edit-patient" 
-                        data-patient-id="${patient.id}"
-                        title="Modifier">
-                  <i class="bx bx-edit"></i>
+              <div class="dropdown">
+                <button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill dropdown-toggle hide-arrow"
+                  data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
+                  <i class="bx bx-dots-vertical-rounded"></i>
                 </button>
-                <button type="button" class="btn btn-label-success btn-show-parametres" 
-                        data-patient-code="${code}"
-                        data-patient-name="${noms}"
-                        title="Paramètres">
-                  <i class="bx bx-clipboard"></i>
-                </button>
-                <button type="button" class="btn btn-label-danger btn-delete-patient" 
-                        data-patient-id="${patient.id}"
-                        data-patient-name="${noms}"
-                        title="Supprimer">
-                  <i class="bx bx-trash"></i>
-                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <button type="button" class="dropdown-item btn-edit-patient d-flex align-items-center"
+                      data-patient-id="${id}">
+                      <i class="bx bx-edit me-2"></i> Modifier
+                    </button>
+                  </li>
+                  <li>
+                    <button type="button" class="dropdown-item btn-show-parametres d-flex align-items-center"
+                      data-patient-code="${code}"
+                      data-patient-name="${dataName}">
+                      <i class="bx bx-clipboard me-2"></i> Paramètres
+                    </button>
+                  </li>
+                  <li>
+                    <button type="button" class="dropdown-item btn-delete-patient d-flex align-items-center text-danger"
+                      data-patient-id="${id}"
+                      data-patient-name="${dataName}">
+                      <i class="bx bx-trash me-2"></i> Supprimer
+                    </button>
+                  </li>
+                </ul>
               </div>
             </td>
           </tr>
         `;
       }).join('');
 
-      // Réattacher les event listeners après mise à jour de la table
       setupTableActions();
     }
 

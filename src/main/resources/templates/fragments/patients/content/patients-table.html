@@ -1,38 +1,61 @@
-<table th:fragment="patientsTable"
-       id="patientsTable"
-       class="table table-hover align-middle">
-
-  <thead class="table-light">
-    <tr>
-      <th>Code</th>
-      <th>Noms et Prénom</th>
-      <th>Sexe</th>
-      <th>Date naissance</th>
-      <th>Téléphone</th>
-      <th>Type</th>
-      <th>Statut</th>
-      <th class="text-center">Actions</th>
-    </tr>
-  </thead>
-
-  <tbody id="patientsTableBody">
-    <tr th:each="patient : ${patients}">
-      <td><span th:text="${patient.code}" class="badge bg-label-primary"></span></td>
-      <td th:text="${patient.noms}"></td>
-      <td th:text="${patient.sexe}"></td>
-      <td th:text="${#temporals.format(patient.dateNaissance,'dd/MM/yyyy')}"></td>
-      <td th:text="${patient.phone}"></td>
-      <td th:text="${patient.typePatient}"></td>
-      <td>
-        <span th:text="${patient.estActif ? 'Actif':'Inactif'}"></span>
-      </td>
-      <td class="text-center">
-        <button class="btn btn-sm btn-edit-patient"
-                th:data-patient-id="${patient.id}">
-          ✏️
-        </button>
-      </td>
-    </tr>
-  </tbody>
-
-</table>
+<div th:fragment="patientsTable" class="table-responsive">
+  <table class="table table-sm table-hover align-middle" id="patientsTable" style="font-size: 0.8rem;">
+    <thead class="table-dark" style="font-size: 0.75rem;">
+      <tr>
+        <th class="text-white fw-bold" style="font-size: 0.75rem;">Code</th>
+        <th class="text-white fw-bold" style="font-size: 0.75rem;">Noms et Prénom</th>
+        <th class="text-white fw-bold" style="font-size: 0.75rem;">Sexe</th>
+        <th class="text-white fw-bold" style="font-size: 0.75rem;">Date nais</th>
+        <th class="text-white fw-bold" style="font-size: 0.75rem;">Téléphone</th>
+        <th class="text-white fw-bold" style="font-size: 0.75rem;">Type</th>
+        <th class="text-white fw-bold" style="font-size: 0.75rem;">Date</th>
+        <th class="text-center text-white fw-bold" style="font-size: 0.75rem;">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="patientsTableBody">
+      <tr th:if="${#lists.isEmpty(patients)}">
+        <td colspan="8" class="text-center text-muted py-4">
+          <i class="bx bx-info-circle fs-4 d-block mb-2"></i>
+          Aucun patient enregistré
+        </td>
+      </tr>
+      <tr th:each="patient : ${patients}" th:data-patient-id="${patient.id}">
+        <td><span th:text="${patient.code}"></span></td>
+        <td th:text="${patient.noms}"></td>
+        <td><span th:text="${patient.sexe}"></span></td>
+        <td th:text="${#temporals.format(patient.dateNaissance, 'dd/MM/yyyy')}"></td>
+        <td th:text="${patient.phone}"></td>
+        <td><span th:text="${patient.typePatient}"></span></td>
+        <td th:text="${patient.dateCreation != null ? #temporals.format(patient.dateCreation, 'dd/MM/yyyy') : '-'}"></td>
+        <td class="text-center">
+          <div class="dropdown">
+            <button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill dropdown-toggle hide-arrow"
+              data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
+              <i class="bx bx-dots-vertical-rounded"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li>
+                <button type="button" class="dropdown-item btn-edit-patient d-flex align-items-center"
+                  th:data-patient-id="${patient.id}">
+                  <i class="bx bx-edit me-2"></i> Modifier
+                </button>
+              </li>
+              <li>
+                <button type="button" class="dropdown-item btn-show-parametres d-flex align-items-center"
+                  th:data-patient-code="${patient.code}" th:data-patient-name="${patient.noms}">
+                  <i class="bx bx-clipboard me-2"></i> Paramètres
+                </button>
+              </li>
+              <li>
+                <button type="button" class="dropdown-item btn-delete-patient d-flex align-items-center text-danger"
+                  th:data-patient-id="${patient.id}" th:data-patient-name="${patient.noms}">
+                  <i class="bx bx-trash me-2"></i> Supprimer
+                </button>
+              </li>
+            </ul>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

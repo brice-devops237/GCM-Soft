@@ -1,19 +1,22 @@
 <!-- fragments/js.html -->
 <th:block th:fragment="js">
 
-  <!-- Core / Vendor JS -->
+  <!-- Core JS -->
   <script th:src="@{/assets/vendor/libs/jquery/jquery.js}"></script>
   <script th:src="@{/assets/vendor/libs/popper/popper.js}"></script>
   <script th:src="@{/assets/vendor/js/bootstrap.js}"></script>
-
   <script th:src="@{/assets/vendor/libs/@algolia/autocomplete-js.js}"></script>
+  <script th:src="@{/assets/vendor/libs/pickr/pickr.js}"></script>
   <script th:src="@{/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js}"></script>
   <script th:src="@{/assets/vendor/libs/hammer/hammer.js}"></script>
   <script th:src="@{/assets/vendor/libs/i18n/i18n.js}"></script>
   <script th:src="@{/assets/vendor/js/menu.js}"></script>
 
+  <!-- Vendors JS -->
+  <script th:src="@{/assets/vendor/libs/notyf/notyf.js}"></script>
+  <script th:src="@{/js/app-toasts.js}"></script>
+
   <!-- Pickers -->
-  <script th:src="@{/assets/vendor/libs/pickr/pickr.js}"></script>
   <script th:src="@{/assets/vendor/libs/moment/moment.js}"></script>
   <script th:src="@{/assets/vendor/libs/flatpickr/flatpickr.js}"></script>
   <script th:src="@{/assets/vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.js}"></script>
@@ -33,7 +36,6 @@
   <!-- Main JS -->
   <script th:src="@{/assets/js/main.js}"></script>
 
-  <!-- Page JS optionnel : charger uniquement sur les pages qui en ont besoin (ex: dashboards-analytics, forms-pickers, ui-modals) -->
-  <script th:src="@{/assets/js/dashboards-analytics.js}"></script>
+  <!-- Page JS : ajouter ici les scripts spécifiques à la page (ex. ui-toasts.js) -->
 
 </th:block>

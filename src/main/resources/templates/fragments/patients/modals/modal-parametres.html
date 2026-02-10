@@ -1,134 +1,127 @@
 <div class="modal fade" id="modalParametres" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Saisie des paramètres du patient</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <form id="parametresForm" th:action="@{/parametres-patient/create}" method="post">
-          <div class="modal-body p-4">
-            <input type="hidden" id="parametreId" name="id" />
-            <input type="hidden" id="codePatientParam" name="codePatient" />
-
-            <div class="alert alert-info mb-4">
-              <i class="bx bx-info-circle me-2"></i>
-              <strong>Patient :</strong> <span id="parametresPatientName"></span> (<span id="parametresPatientCode"></span>)
-            </div>
-
-            <div class="row g-3 mb-3">
-              <div class="col-md-3">
-                <label class="form-label">Date <span class="text-danger">*</span></label>
-                <input type="date" class="form-control" name="date" id="paramDate" required />
-                <div class="invalid-feedback" id="error-paramDate"></div>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label">Heure</label>
-                <input type="time" class="form-control" name="heure" id="paramHeure" />
-              </div>
-              <div class="col-md-3">
-                <label class="form-label">Source <span class="text-danger">*</span></label>
-                <select class="form-select" name="source" id="source" required>
-                  <option value="">Sélectionner</option>
-                  <option value="Consultation">Consultation</option>
-                  <option value="Urgence">Urgence</option>
-                  <option value="Hospitalisation">Hospitalisation</option>
-                  <option value="Suivi">Suivi</option>
-                </select>
-                <div class="invalid-feedback" id="error-source"></div>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label">Code traitement</label>
-                <input type="text" class="form-control" name="codeTraitement" id="codeTraitement" />
-              </div>
-            </div>
-
-            <!-- Paramètres vitaux -->
-            <div class="col-12 mt-3 mb-2">
-              <h6 class="border-bottom pb-2 mb-3">Paramètres vitaux</h6>
-            </div>
-            <div class="row g-3">
-              <div class="col-md-3 col-6">
-                <label class="form-label">PAM</label>
-                <input type="number" class="form-control" name="ta" id="pam" step="0.1" min="0" value="0" placeholder="0" />
-              </div>
-              <div class="col-md-3 col-6">
-                <label class="form-label">FC (Fréquence Cardiaque)</label>
-                <input type="number" class="form-control" name="fc" id="fc" step="1" min="0" value="0" placeholder="0" />
-              </div>
-              <div class="col-md-3 col-6">
-                <label class="form-label">FR (Fréquence Respiratoire)</label>
-                <input type="number" class="form-control" name="fr" id="fr" step="1" min="0" value="0" placeholder="0" />
-              </div>
-              <div class="col-md-3 col-6">
-                <label class="form-label">Température (°C)</label>
-                <input type="text" class="form-control" name="temp" id="temp" value="0.0" placeholder="0.0" />
-              </div>
-              <div class="col-md-3 col-6">
-                <label class="form-label">SaO2 (Saturation en Oxygène)</label>
-                <input type="text" class="form-control" name="sa02" id="sa02" value="0" placeholder="0" />
-              </div>
-              <div class="col-md-3 col-6">
-                <label class="form-label">PAS</label>
-                <input type="number" class="form-control" name="pas" id="pas" step="1" min="0" value="0" placeholder="0" />
-              </div>
-              <div class="col-md-3 col-6">
-                <label class="form-label">PAD</label>
-                <input type="number" class="form-control" name="pad" id="pad" step="1" min="0" value="0" placeholder="0" />
-              </div>
-            </div>
-
-            <!-- Paramètres anthropométriques -->
-            <div class="col-12 mt-4 mb-2">
-              <h6 class="border-bottom pb-2 mb-3">Paramètres anthropométriques</h6>
-            </div>
-            <div class="row g-3">
-              <div class="col-md-3 col-6">
-                <label class="form-label">Poids (Kg)</label>
-                <input type="number" class="form-control" name="poids" id="poids" step="0.1" min="0" value="0" placeholder="0" />
-              </div>
-              <div class="col-md-3 col-6">
-                <label class="form-label">Taille (cm)</label>
-                <input type="number" class="form-control" name="taille" id="taille" step="0.1" min="0" value="0" placeholder="0.0" />
-              </div>
-              <div class="col-md-3 col-6">
-                <label class="form-label">IMC (Indice de Masse Corporelle)</label>
-                <input type="text" class="form-control" name="imc" id="imc" value="0" placeholder="0" readonly />
-                <small class="text-muted">Calculé automatiquement</small>
-              </div>
-              <div class="col-md-3 col-6">
-                <label class="form-label">Diurèse</label>
-                <input type="number" class="form-control" name="duirese" id="duirese" step="0.1" min="0" value="0" placeholder="0" />
-              </div>
-            </div>
-
-            <!-- Autres paramètres -->
-            <div class="col-12 mt-4 mb-2">
-              <h6 class="border-bottom pb-2 mb-3">Autres paramètres</h6>
-            </div>
-            <div class="row g-3">
-              <div class="col-md-6">
-                <label class="form-label">DDR (Date des dernières règles)</label>
-                <div class="input-group">
-                  <input type="date" class="form-control" name="ddr" id="ddr" />
-                  <button type="button" class="btn btn-outline-secondary" id="btnCalculerDdr" title="Calculer terme prévu">
-                    <i class="bx bx-calendar"></i>
-                  </button>
-                  <button type="button" class="btn btn-info" id="btnCalculerTerme">Calculer</button>
-                </div>
-                <small class="text-muted" id="termePrevuDisplay"></small>
-              </div>
-              <div class="col-12">
-                <label class="form-label">Autres</label>
-                <textarea class="form-control" name="autre" id="autre" rows="4" placeholder="Informations complémentaires..."></textarea>
-              </div>
-            </div>
-
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Annuler</button>
-            <button type="submit" class="btn btn-primary">Enregistrer</button>
-          </div>
-        </form>
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" style="max-height: 90vh;">
+    <div class="modal-content d-flex flex-column" style="max-height: 90vh;">
+      <div class="modal-header flex-shrink-0">
+        <h5 class="modal-title" id="modalPatientTitle">Saisie des paramètres du patient : <strong class="text-uppercase" id="parametresPatientName"></strong> (<span class="text-primary" id="parametresPatientCode"></span>)</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+
+      <form id="parametresForm" th:action="@{/parametres-patient/create}" method="post" class="d-flex flex-column flex-grow-1" style="min-height: 0;">
+        <div class="modal-body p-4 overflow-y-auto flex-grow-1" style="min-height: 0; max-height: calc(90vh - 140px);">
+          <input type="hidden" id="parametreId" name="id" />
+          <input type="hidden" id="codePatientParam" name="codePatient" />
+          <input type="hidden" name="codeTraitement" id="codeTraitement" value="" />
+
+          <div class="row g-2 mb-3 d-none">
+            <div class="col-4">
+              <label class="form-label small">Date <span class="text-danger">*</span></label>
+              <input type="date" class="form-control form-control-sm" name="date" id="paramDate" required />
+            </div>
+            <div class="col-4">
+              <label class="form-label small">Heure</label>
+              <input type="time" class="form-control form-control-sm" name="heure" id="paramHeure" />
+            </div>
+            <div class="col-4">
+              <label class="form-label small">Source <span class="text-danger">*</span></label>
+              <select class="form-select form-select-sm" name="source" id="source" required>
+                <option value="">Sélectionner</option>
+                <option value="Consultation">Consultation</option>
+                <option value="Urgence">Urgence</option>
+                <option value="Hospitalisation">Hospitalisation</option>
+                <option value="Suivi">Suivi</option>
+              </select>
+            </div>
+          </div>
+          <p class="small text-muted mb-3 d-none">Patient : <strong id="parametresPatientName"></strong> (<span id="parametresPatientCode"></span>)</p>
+
+          <!-- Paramètres vitaux -->
+          <h6 class="border-bottom pb-2 mb-3 d-flex align-items-center">
+            Paramètres vitaux
+          </h6>
+          <div class="row g-3 mb-4">
+            <div class="col-12 col-md-6">
+              <label class="form-label small">PAM</label>
+              <input type="number" class="form-control form-control-sm" name="ta" id="pam" step="0.1" min="0" value="0" placeholder="0" />
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label small">FC (Fréquence Cardiaque)</label>
+              <input type="number" class="form-control form-control-sm" name="fc" id="fc" step="1" min="0" value="0" placeholder="0" />
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label small">FR (Fréquence Respiratoire)</label>
+              <input type="number" class="form-control form-control-sm" name="fr" id="fr" step="1" min="0" value="0" placeholder="0" />
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label small">Température (°C)</label>
+              <input type="text" class="form-control form-control-sm" name="temp" id="temp" value="0.0" placeholder="0.0" />
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label small">SaO2 (Saturation en Oxygène)</label>
+              <input type="text" class="form-control form-control-sm" name="sa02" id="sa02" value="0" placeholder="0" />
+            </div>
+            <div class="col-12 col-md-3">
+              <label class="form-label small">PAS</label>
+              <input type="number" class="form-control form-control-sm" name="pas" id="pas" step="1" min="0" value="0" placeholder="0" />
+            </div>
+            <div class="col-12 col-md-3">
+              <label class="form-label small">PAD</label>
+              <input type="number" class="form-control form-control-sm" name="pad" id="pad" step="1" min="0" value="0" placeholder="0" />
+            </div>
+          </div>
+
+          <!-- Paramètres Anthropométriques -->
+          <h6 class="border-bottom pb-2 mb-3 d-flex align-items-center">
+            Paramètres Anthropométriques
+          </h6>
+          <div class="row g-3 mb-4">
+            <div class="col-12 col-md-6">
+              <label class="form-label small">Poids (Kg)</label>
+              <input type="number" class="form-control form-control-sm" name="poids" id="poids" step="0.1" min="0" value="0" placeholder="0" />
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label small">Taille (cm)</label>
+              <input type="number" class="form-control form-control-sm" name="taille" id="taille" step="0.1" min="0" value="0" placeholder="0.0" />
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label small">IMC (Indice de Masse Corporelle)</label>
+              <input type="text" class="form-control form-control-sm" name="imc" id="imc" value="0" placeholder="0" readonly />
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label small">Diurèse</label>
+              <input type="number" class="form-control form-control-sm" name="duirese" id="duirese" step="0.1" min="0" value="0" placeholder="0" />
+            </div>
+          </div>
+
+          <!-- Autres Paramètres -->
+          <h6 class="border-bottom pb-2 mb-3 d-flex align-items-center">
+            Autres Paramètres
+          </h6>
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label small">DDR (Date des dernières règles)</label>
+              <div class="input-group input-group-sm">
+                <input type="date" class="form-control form-control-sm" name="ddr" id="ddr" />
+                <button type="button" class="btn btn-outline-secondary" id="btnCalculerDdr" title="Calendrier">
+                  <i class="bx bx-calendar"></i>
+                </button>
+                <button type="button" class="btn btn-info btn-sm" id="btnCalculerTerme">Calculer</button>
+              </div>
+              <small class="text-muted" id="termePrevuDisplay"></small>
+            </div>
+            <div class="col-12">
+              <label class="form-label small">Autres</label>
+              <textarea class="form-control form-control-sm" name="autre" id="autre" rows="4" placeholder="Informations complémentaires..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer flex-shrink-0 py-3 justify-content-end border-top">
+          <button type="button" class="btn btn-label-danger btn-sm" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary btn-sm">
+            <i class="bx bx-save me-1"></i> Enregistrer
+          </button>
+        </div>
+      </form>
     </div>
   </div>
+</div>

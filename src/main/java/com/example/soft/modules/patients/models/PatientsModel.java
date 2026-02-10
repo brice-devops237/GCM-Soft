@@ -127,6 +127,10 @@ public class PatientsModel {
     @Column(length = 200)
     private String urgence;
 
+    /** Relation avec la personne à contacter (ex: Père, Mère, Autre). */
+    @Column(name = "relation_urgence", length = 100)
+    private String relationUrgence;
+
     @Column(name = "contact_urgence", length = 20)
     private String contactUrgence;
 

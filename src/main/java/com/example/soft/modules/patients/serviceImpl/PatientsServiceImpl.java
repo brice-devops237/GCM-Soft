@@ -231,7 +231,8 @@ public class PatientsServiceImpl implements PatientsService {
         if (filters.containsKey("dateDebut") && filters.containsKey("dateFin")) {
             LocalDate start = (LocalDate) filters.get("dateDebut");
             LocalDate end = (LocalDate) filters.get("dateFin");
-            spec = spec.and((root, query, cb) -> cb.between(root.get("date"), start, end));
+            spec = spec.and((root, query, cb) -> cb.between(root.get("dateCreation"),
+                    start.atStartOfDay(), end.atTime(23, 59, 59, 999_999_999)));
         }
 
         return patientsRepository.findAll(spec);

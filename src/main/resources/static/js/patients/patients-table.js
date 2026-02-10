@@ -29,7 +29,9 @@ window.PatientsTable = (function () {
         fetch(`/patients/api/${id}`)
             .then(r => r.json())
             .then(fillPatientForm)
-            .catch(() => alert('Erreur de chargement patient'));
+            .catch(function () {
+            window.AppToasts && window.AppToasts.error('Impossible de charger les données du patient.');
+        });
     }
 
     function deletePatient(id, name) {
