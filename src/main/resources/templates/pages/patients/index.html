@@ -505,7 +505,10 @@
                 <label class="form-label">IMC (Kg/m²)</label>
                 <input type="text" class="form-control" name="imc" id="imc" readonly />
                 <small class="text-muted">Calculé automatiquement</small>
+                 <!-- Message IMC -->
+                <div id="imcMessage" class="mt-2 fw-semibold"></div>
               </div>
+
               
               <!-- Autres paramètres -->
               <div class="col-12 mt-3">
@@ -766,47 +769,85 @@
       return isValid;
     }
 
-    // Configuration des calculs automatiques
-    function setupCalculations() {
-      const pasInput = document.getElementById('pas');
-      const padInput = document.getElementById('pad');
-      const pamInput = document.getElementById('pam');
-      
-      if (pasInput && padInput && pamInput) {
-        function calculatePAM() {
-          const pas = parseFloat(pasInput.value) || 0;
-          const pad = parseFloat(padInput.value) || 0;
-          if (pas > 0 && pad > 0) {
-            const pam = pad + (pas - pad) / 3;
-            pamInput.value = pam.toFixed(1);
-          } else {
-            pamInput.value = '';
-          }
-        }
-        pasInput.addEventListener('input', calculatePAM);
-        padInput.addEventListener('input', calculatePAM);
-      }
-      
-      const poidsInput = document.getElementById('poids');
-      const tailleInput = document.getElementById('taille');
-      const imcInput = document.getElementById('imc');
-      
-      if (poidsInput && tailleInput && imcInput) {
-        function calculateIMC() {
-          const poids = parseFloat(poidsInput.value) || 0;
-          const taille = parseFloat(tailleInput.value) || 0;
-          if (poids > 0 && taille > 0) {
-            const tailleEnMetres = taille / 100;
-            const imc = poids / (tailleEnMetres * tailleEnMetres);
-            imcInput.value = imc.toFixed(2);
-          } else {
-            imcInput.value = '';
-          }
-        }
-        poidsInput.addEventListener('input', calculateIMC);
-        tailleInput.addEventListener('input', calculateIMC);
+   // Configuration des calculs automatiques
+function setupCalculations() {
+  const pasInput = document.getElementById('pas');
+  const padInput = document.getElementById('pad');
+  const pamInput = document.getElementById('pam');
+  
+  if (pasInput && padInput && pamInput) {
+    function calculatePAM() {
+      const pas = parseFloat(pasInput.value) || 0;
+      const pad = parseFloat(padInput.value) || 0;
+      if (pas > 0 && pad > 0) {
+        const pam = pad + (pas - pad) / 3;
+        pamInput.value = pam.toFixed(1);
+      } else {
+        pamInput.value = '';
       }
     }
+    pasInput.addEventListener('input', calculatePAM);
+    padInput.addEventListener('input', calculatePAM);
+  }
+  
+  const poidsInput = document.getElementById('poids');
+  const tailleInput = document.getElementById('taille');
+  const imcInput = document.getElementById('imc');
+  const imcMessage = document.getElementById('imcMessage');
+  
+  if (poidsInput && tailleInput && imcInput && imcMessage) {
+
+    function updateIMCMessage(imc) {
+      let message = '';
+      let classe = '';
+
+      if (imc < 16) {
+        message = 'DÉNUTRITION SÉVÈRE';
+        classe = 'text-danger';
+      } else if (imc < 18.5) {
+        message = 'INSUFFISANCE PONDÉRALE';
+        classe = 'text-warning';
+      } else if (imc < 25) {
+        message = 'CORPULENCE NORMALE';
+        classe = 'text-success';
+      } else if (imc < 30) {
+        message = 'SURPOIDS';
+        classe = 'text-warning';
+      } else if (imc < 35) {
+        message = 'OBÉSITÉ MODÉRÉE';
+        classe = 'text-orange';
+      } else if (imc < 40) {
+        message = 'OBÉSITÉ SÉVÈRE';
+        classe = 'text-danger';
+      } else {
+        message = 'OBÉSITÉ MORBIDE';
+        classe = 'text-danger fw-bold';
+      }
+
+      imcMessage.className = `mt-2 fw-semibold ${classe}`;
+      imcMessage.textContent = message;
+    }
+
+    function calculateIMC() {
+      const poids = parseFloat(poidsInput.value) || 0;
+      const taille = parseFloat(tailleInput.value) || 0;
+      if (poids > 0 && taille > 0) {
+        const tailleEnMetres = taille / 100;
+        const imc = poids / (tailleEnMetres * tailleEnMetres); // ⚠️ logique inchangée
+        imcInput.value = imc.toFixed(2);
+        updateIMCMessage(imc);
+      } else {
+        imcInput.value = '';
+        imcMessage.textContent = '';
+        imcMessage.className = 'mt-2';
+      }
+    }
+
+    poidsInput.addEventListener('input', calculateIMC);
+    tailleInput.addEventListener('input', calculateIMC);
+  }
+}
+
 
     // Configuration du formulaire patient
     function setupPatientForm() {
@@ -1257,6 +1298,10 @@
   </script>
 
   <style>
+    .text-orange {
+  color: #fd7e14;
+}
+
     /* Stepper Styles */
     .stepper {
       display: flex;
@@ -1353,6 +1398,37 @@
       border-color: #696cff;
       box-shadow: 0 0 0 0.2rem rgba(105, 108, 255, 0.1);
     }
+    /* Scroll vertical dans le modal patient */
+#modalPatient .modal-body {
+  max-height: calc(100vh - 200px); /* adapte si besoin */
+  overflow-y: auto;
+}
+
+/* Scroll plus fluide (optionnel) */
+#modalPatient .modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+#modalPatient .modal-body::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+/* Scroll vertical dans le modal des paramètres patient */
+#modalParametres .modal-body {
+  max-height: calc(100vh - 200px); /* garde header + footer visibles */
+  overflow-y: auto;
+}
+
+/* Scrollbar discrète (optionnel) */
+#modalParametres .modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+#modalParametres .modal-body::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.25);
+  border-radius: 4px;
+}
+
+
   </style>
 </body>
 
