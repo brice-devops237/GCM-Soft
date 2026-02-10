@@ -130,6 +130,48 @@ public class ParametresPatientController {
     }
 
     /**
+     * Récupère un paramètre par son id (JSON). Utilisé pour l'édition.
+     */
+    @GetMapping("/get/{id}")
+    @ResponseBody
+    public ResponseEntity<ParametresPatientModel> getById(@PathVariable Integer id) {
+        ParametresPatientModel p = service.getById(id);
+        return ResponseEntity.ok(p);
+    }
+
+    /**
+     * Met à jour un paramètre existant. Retourne JSON pour affichage toast sans rechargement.
+     */
+    @PostMapping("/update")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> update(@ModelAttribute ParametresPatientModel parametre) {
+        Map<String, Object> body = new HashMap<>();
+        try {
+            if (parametre.getId() == null) {
+                body.put("success", false);
+                body.put("message", "ID du paramètre manquant.");
+                return ResponseEntity.badRequest().body(body);
+            }
+            service.update(parametre.getId(), parametre);
+            body.put("success", true);
+            body.put("message", "Les paramètres ont été modifiés avec succès.");
+            return ResponseEntity.ok(body);
+        } catch (IllegalArgumentException ex) {
+            body.put("success", false);
+            body.put("message", ex.getMessage());
+            return ResponseEntity.badRequest().body(body);
+        } catch (IllegalStateException ex) {
+            body.put("success", false);
+            body.put("message", ex.getMessage());
+            return ResponseEntity.badRequest().body(body);
+        } catch (Exception ex) {
+            body.put("success", false);
+            body.put("message", "Une erreur inattendue est survenue lors de la modification.");
+            return ResponseEntity.status(500).body(body);
+        }
+    }
+
+    /**
      * Supprime un enregistrement de paramètres patients.
      *
      * <p>

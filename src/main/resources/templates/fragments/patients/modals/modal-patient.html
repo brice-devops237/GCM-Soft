@@ -6,7 +6,8 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-      <form id="patientForm" th:action="@{/patients/create}" method="post" class="d-flex flex-column flex-grow-1" style="min-height: 0;">
+      <form id="patientForm" th:action="@{/patients/create}" method="post" class="d-flex flex-column flex-grow-1"
+        style="min-height: 0;">
         <div class="modal-body p-4 overflow-y-auto flex-grow-1" style="min-height: 0; max-height: calc(90vh - 140px);">
           <input type="hidden" id="patientId" name="id" />
           <input type="hidden" name="date" id="date" />
@@ -46,7 +47,8 @@
                 <div class="col-12 col-sm-6">
                   <label class="form-label">Date de naissance <span class="text-danger">*</span></label>
                   <div class="input-group input-group-sm">
-                    <input type="date" class="form-control form-control-sm" name="dateNaissance" id="dateNaissance" required />
+                    <input type="date" class="form-control form-control-sm" name="dateNaissance" id="dateNaissance"
+                      required />
                     <button type="button" class="btn btn-outline-secondary" tabindex="-1" title="Calendrier">
                       <i class="bx bx-calendar"></i>
                     </button>
@@ -79,7 +81,8 @@
                 </div>
                 <div class="col-12 col-sm-6 col-md-4">
                   <label class="form-label">Tel. <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control form-control-sm" name="phone" id="phone" placeholder="+237" value="+237" required />
+                  <input type="text" class="form-control form-control-sm" name="phone" id="phone" placeholder="+237"
+                    value="+237" required />
                   <div class="invalid-feedback" id="error-phone"></div>
                 </div>
               </div>
@@ -140,7 +143,8 @@
 
               <div class="mb-3">
                 <label class="form-label">Personne à contacter en cas d'urgence</label>
-                <input type="text" class="form-control form-control-sm" name="urgence" id="urgence" placeholder="Nom et prénom" />
+                <input type="text" class="form-control form-control-sm" name="urgence" id="urgence"
+                  placeholder="Nom et prénom" />
               </div>
               <div class="row g-2 mb-3">
                 <div class="col-12 col-sm-6">
@@ -159,11 +163,13 @@
                 </div>
                 <div class="col-12 col-sm-6">
                   <label class="form-label">Téléphone</label>
-                  <input type="text" class="form-control form-control-sm" name="contactUrgence" id="contactUrgence" placeholder="+237" value="+237" />
+                  <input type="text" class="form-control form-control-sm" name="contactUrgence" id="contactUrgence"
+                    placeholder="+237" value="+237" />
                 </div>
                 <div id="relationUrgenceAutreWrap" class="col-12 mt-2 d-none">
                   <label class="form-label small">Précisez la relation</label>
-                  <input type="text" class="form-control form-control-sm" id="relationUrgenceAutre" placeholder="Ex: Oncle, Tuteur..." />
+                  <input type="text" class="form-control form-control-sm" id="relationUrgenceAutre"
+                    placeholder="Ex: Oncle, Tuteur..." />
                 </div>
               </div>
               <div class="table-responsive mb-3">
@@ -189,11 +195,17 @@
         </div>
 
         <div class="modal-footer flex-shrink-0 py-3 justify-content-end">
-          <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal">Annuler</button>
-          <button type="submit" class="btn btn-primary btn-sm" id="btnSubmit" disabled title="Remplissez tous les champs obligatoires pour activer l'enregistrement">
-            <i class="bx bx-save me-1"></i> <span id="btnSubmitLabel">Enregistrer</span>
+          <button type="button" class="btn btn-danger btn-sm me-2" data-bs-dismiss="modal">
+            Annuler
+          </button>
+
+          <button type="submit" class="btn btn-primary btn-sm" id="btnSubmit" disabled
+            title="Remplissez tous les champs obligatoires pour activer l'enregistrement">
+            <i class="bx bx-save me-1"></i>
+            <span id="btnSubmitLabel">Enregistrer</span>
           </button>
         </div>
+
       </form>
     </div>
   </div>

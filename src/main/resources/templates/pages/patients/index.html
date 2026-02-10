@@ -159,6 +159,7 @@
     const totalSteps = 3;
     let currentPatientCode = null;
     let currentPatientName = null;
+    let isParametreEditMode = false;
 
     // Afficher les messages flash (success/error) en toasts et masquer les alertes inline
     function showFlashAsToasts() {
@@ -235,6 +236,11 @@
       const parametresCard = document.getElementById('parametresCard');
       if (parametresCard) {
         parametresCard.addEventListener('click', function (e) {
+          if (e.target.closest('.btn-edit-parametre')) {
+            const btn = e.target.closest('.btn-edit-parametre');
+            const parametreId = parseInt(btn.getAttribute('data-parametre-id'));
+            editParametre(parametreId);
+          }
           if (e.target.closest('.btn-delete-parametre')) {
             const btn = e.target.closest('.btn-delete-parametre');
             const parametreId = parseInt(btn.getAttribute('data-parametre-id'));
@@ -748,11 +754,14 @@
       loadParametres(code);
     }
 
-    // Ouvre le modal paramètres (à appeler depuis la card uniquement)
+    // Ouvre le modal paramètres (à appeler depuis la card uniquement) — mode création
     function openParametresModal() {
+      isParametreEditMode = false;
       const codePatientParam = document.getElementById('codePatientParam');
       const paramDateEl = document.getElementById('paramDate');
       const sourceEl = document.getElementById('source');
+      const parametreIdEl = document.getElementById('parametreId');
+      if (parametreIdEl) parametreIdEl.value = '';
       if (currentPatientCode && codePatientParam) codePatientParam.value = currentPatientCode;
       const today = new Date().toISOString().split('T')[0];
       if (paramDateEl) paramDateEl.value = today;
@@ -762,6 +771,45 @@
         const modal = new bootstrap.Modal(modalEl);
         modal.show();
       }
+    }
+
+    // Charge un paramètre par id et ouvre le modal en mode édition
+    function editParametre(id) {
+      fetch('/parametres-patient/get/' + id)
+        .then(response => response.json())
+        .then(function (p) {
+          isParametreEditMode = true;
+          const setVal = function (id, v) { var el = document.getElementById(id); if (el) el.value = (v != null && v !== '') ? v : ''; };
+          setVal('parametreId', p.id);
+          setVal('codePatientParam', p.codePatient);
+          setVal('codeTraitement', p.codeTraitement || '');
+          setVal('paramDate', p.date || '');
+          setVal('paramHeure', p.heure || '');
+          setVal('source', p.source || 'Consultation');
+          setVal('pam', p.ta);
+          setVal('fc', p.fc);
+          setVal('fr', p.fr);
+          setVal('temp', p.temp);
+          setVal('sa02', p.sa02);
+          setVal('pas', p.pas);
+          setVal('pad', p.pad);
+          setVal('poids', p.poids);
+          setVal('taille', p.taille);
+          setVal('imc', p.imc);
+          setVal('duirese', p.duirese);
+          setVal('ddr', p.ddr || '');
+          setVal('autre', p.autre || '');
+          if (currentPatientCode) document.getElementById('codePatientParam').value = currentPatientCode;
+          var modalEl = document.getElementById('modalParametres');
+          if (modalEl) {
+            var modal = new bootstrap.Modal(modalEl);
+            modal.show();
+          }
+        })
+        .catch(function (err) {
+          console.error('Error loading parametre:', err);
+          window.AppToasts && window.AppToasts.error('Impossible de charger les paramètres pour modification.');
+        });
     }
 
     function loadParametres(codePatient) {
@@ -809,6 +857,12 @@
                       <i class="bx bx-dots-vertical-rounded"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
+                      <li>
+                        <button type="button" class="dropdown-item btn-edit-parametre d-flex align-items-center"
+                          data-parametre-id="${id}">
+                          <i class="bx bx-edit me-2"></i> Modifier
+                        </button>
+                      </li>
                       <li>
                         <button type="button" class="dropdown-item btn-delete-parametre d-flex align-items-center text-danger"
                           data-parametre-id="${id}">
