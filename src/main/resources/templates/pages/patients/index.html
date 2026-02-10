@@ -17,7 +17,7 @@
         <!-- Content -->
         <div class="content-wrapper">
           <div class="container-xxl flex-grow-1 container-p-y">
-            
+
             <!-- Messages Flash -->
             <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
               <span th:text="${success}"></span>
@@ -34,7 +34,8 @@
                 <div class="d-flex align-items-center justify-content-between mb-4">
                   <!-- Bouton Ajouter -->
                   <div>
-                    <button type="button" class="btn btn-primary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#modalPatient">
+                    <button type="button" class="btn btn-primary btn-sm px-3" data-bs-toggle="modal"
+                      data-bs-target="#modalPatient">
                       <span class="bx bx-plus-circle me-1"></span> Ajouter patient
                     </button>
                   </div>
@@ -46,14 +47,17 @@
                       <span class="input-group-text px-2">au</span>
                       <input type="date" class="form-control" id="filterDateFin" />
                     </div>
-                    <input type="text" class="form-control form-control-sm" id="filterCode" placeholder="Code patient" />
-                    <input type="text" class="form-control form-control-sm" id="filterSearch" placeholder="Nom et prénom..." />
+                    <input type="text" class="form-control form-control-sm" id="filterCode"
+                      placeholder="Code patient" />
+                    <input type="text" class="form-control form-control-sm" id="filterSearch"
+                      placeholder="Nom et prénom..." />
                     <select class="form-select form-select-sm" id="filterSexe" style="width: auto;">
                       <option value="">Tous</option>
                       <option value="Masculin">Masculin</option>
                       <option value="Féminin">Féminin</option>
                     </select>
-                    <div class="spinner-border spinner-border-sm d-none" id="filterSpinner" role="status" style="width: 1rem; height: 1rem;">
+                    <div class="spinner-border spinner-border-sm d-none" id="filterSpinner" role="status"
+                      style="width: 1rem; height: 1rem;">
                       <span class="visually-hidden">Chargement...</span>
                     </div>
                   </div>
@@ -85,35 +89,32 @@
                         <td><span class="badge bg-label-primary" th:text="${patient.code}"></span></td>
                         <td th:text="${patient.noms}"></td>
                         <td>
-                          <span class="badge" 
-                                th:classappend="${patient.sexe == 'Masculin'} ? 'bg-label-info' : 'bg-label-danger'"
-                                th:text="${patient.sexe}"></span>
+                          <span class="badge"
+                            th:classappend="${patient.sexe == 'Masculin'} ? 'bg-label-info' : 'bg-label-danger'"
+                            th:text="${patient.sexe}"></span>
                         </td>
                         <td th:text="${#temporals.format(patient.dateNaissance, 'dd/MM/yyyy')}"></td>
                         <td th:text="${patient.phone}"></td>
                         <td><span class="badge bg-label-secondary" th:text="${patient.typePatient}"></span></td>
                         <td>
-                          <span class="badge" 
-                                th:classappend="${patient.estActif} ? 'bg-label-success' : 'bg-label-secondary'"
-                                th:text="${patient.estActif} ? 'Actif' : 'Inactif'"></span>
+                          <span class="badge"
+                            th:classappend="${patient.estActif} ? 'bg-label-success' : 'bg-label-secondary'"
+                            th:text="${patient.estActif} ? 'Actif' : 'Inactif'"></span>
                         </td>
                         <td class="text-center">
                           <div class="btn-group btn-group-sm" role="group">
-                            <button type="button" class="btn btn-label-info btn-edit-patient" 
-                                    th:data-patient-id="${patient.id}"
-                                    title="Modifier">
+                            <button type="button" class="btn btn-label-info btn-edit-patient"
+                              th:data-patient-id="${patient.id}" title="Modifier">
                               <i class="bx bx-edit"></i>
                             </button>
-                            <button type="button" class="btn btn-label-success btn-show-parametres" 
-                                    th:data-patient-code="${patient.code}"
-                                    th:data-patient-name="${patient.noms}"
-                                    title="Paramètres">
+                            <button type="button" class="btn btn-label-success btn-show-parametres"
+                              th:data-patient-code="${patient.code}" th:data-patient-name="${patient.noms}"
+                              title="Paramètres">
                               <i class="bx bx-clipboard"></i>
                             </button>
-                            <button type="button" class="btn btn-label-danger btn-delete-patient" 
-                                    th:data-patient-id="${patient.id}"
-                                    th:data-patient-name="${patient.noms}"
-                                    title="Supprimer">
+                            <button type="button" class="btn btn-label-danger btn-delete-patient"
+                              th:data-patient-id="${patient.id}" th:data-patient-name="${patient.noms}"
+                              title="Supprimer">
                               <i class="bx bx-trash"></i>
                             </button>
                           </div>
@@ -175,377 +176,11 @@
     </div>
   </div>
 
-  <!-- Modal Patient avec Stepper -->
-  <div class="modal fade" id="modalPatient" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modalPatientTitle">Enregistrement d'un patient</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <form id="patientForm" th:action="@{/patients/create}" method="post">
-          <div class="modal-body p-4">
-            <input type="hidden" id="patientId" name="id" />
-            
-            <!-- Stepper -->
-            <ul class="stepper" id="patientStepper">
-              <li class="stepper-item completed">
-                <div class="stepper-wrapper">
-                  <div class="stepper-icon">
-                    <i class="bx bx-user"></i>
-                  </div>
-                  <div class="stepper-label">
-                    <h6 class="mb-0">Informations personnelles</h6>
-                  </div>
-                </div>
-              </li>
-              <li class="stepper-item">
-                <div class="stepper-wrapper">
-                  <div class="stepper-icon">
-                    <i class="bx bx-phone-call"></i>
-                  </div>
-                  <div class="stepper-label">
-                    <h6 class="mb-0">Contact</h6>
-                  </div>
-                </div>
-              </li>
-              <li class="stepper-item">
-                <div class="stepper-wrapper">
-                  <div class="stepper-icon">
-                    <i class="bx bx-file"></i>
-                  </div>
-                  <div class="stepper-label">
-                    <h6 class="mb-0">Informations administratives</h6>
-                  </div>
-                </div>
-              </li>
-            </ul>
-
-            <!-- Step 1: Informations personnelles -->
-            <div class="stepper-content" data-step="1">
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label class="form-label">Noms et Prénom <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control" name="noms" id="noms" required />
-                  <div class="invalid-feedback" id="error-noms"></div>
-                </div>
-                
-                <div class="col-md-3">
-                  <label class="form-label">Sexe <span class="text-danger">*</span></label>
-                  <select class="form-select" name="sexe" id="sexe" required>
-                    <option value="">Sélectionner</option>
-                    <option value="Masculin">Masculin</option>
-                    <option value="Féminin">Féminin</option>
-                  </select>
-                  <div class="invalid-feedback" id="error-sexe"></div>
-                </div>
-                
-                <div class="col-md-3">
-                  <label class="form-label">Date de naissance <span class="text-danger">*</span></label>
-                  <input type="date" class="form-control" name="dateNaissance" id="dateNaissance" required />
-                  <div class="invalid-feedback" id="error-dateNaissance"></div>
-                </div>
-                
-                <div class="col-md-4">
-                  <label class="form-label">Lieu de naissance</label>
-                  <input type="text" class="form-control" name="lieuNaissance" id="lieuNaissance" />
-                </div>
-                
-                <div class="col-md-4">
-                  <label class="form-label">Nationalité</label>
-                  <input type="text" class="form-control" name="nationalite" id="nationalite" />
-                </div>
-                
-                <div class="col-md-4">
-                  <label class="form-label">Groupe sanguin + Rhesus</label>
-                  <select class="form-select" name="groupe" id="groupe">
-                    <option value="">Sélectionner</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                  </select>
-                </div>
-                
-                <div class="col-md-6">
-                  <label class="form-label">Adresse</label>
-                  <input type="text" class="form-control" name="adresse" id="adresse" />
-                </div>
-                
-                <div class="col-md-3">
-                  <label class="form-label">Ville</label>
-                  <input type="text" class="form-control" name="ville" id="ville" />
-                </div>
-                
-                <div class="col-md-3">
-                  <label class="form-label">Téléphone <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control" name="phone" id="phone" placeholder="+237" required />
-                  <div class="invalid-feedback" id="error-phone"></div>
-                </div>
-                
-                <div class="col-md-4">
-                  <label class="form-label">C.N.I ou N° Passeport</label>
-                  <input type="text" class="form-control" name="cni" id="cni" />
-                </div>
-                
-                <div class="col-md-4">
-                  <label class="form-label">Profession</label>
-                  <input type="text" class="form-control" name="profession" id="profession" />
-                </div>
-                
-                <div class="col-md-4">
-                  <label class="form-label">État matrimonial</label>
-                  <select class="form-select" name="etatMatrimonial" id="etatMatrimonial">
-                    <option value="">Sélectionner</option>
-                    <option value="Célibataire">Célibataire</option>
-                    <option value="Marié(e)">Marié(e)</option>
-                    <option value="Divorcé(e)">Divorcé(e)</option>
-                    <option value="Veuf(ve)">Veuf(ve)</option>
-                  </select>
-                </div>
-                
-                <div class="col-md-6">
-                  <label class="form-label">Nom de la Mère</label>
-                  <input type="text" class="form-control" name="nomMere" id="nomMere" />
-                </div>
-                
-                <div class="col-md-6">
-                  <label class="form-label">Nom du Père</label>
-                  <input type="text" class="form-control" name="nomPere" id="nomPere" />
-                </div>
-                
-                <div class="col-md-4">
-                  <label class="form-label">Ethnie</label>
-                  <input type="text" class="form-control" name="ethnie" id="ethnie" />
-                </div>
-                
-                <div class="col-md-4">
-                  <label class="form-label">Religion</label>
-                  <input type="text" class="form-control" name="religion" id="religion" />
-                </div>
-                
-                <div class="col-md-4">
-                  <label class="form-label">Type de patient</label>
-                  <select class="form-select" name="typePatient" id="typePatient">
-                    <option value="Normal">Normal</option>
-                    <option value="Privé/VIP">Privé/VIP</option>
-                    <option value="Urgent">Urgent</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <!-- Step 2: Contact d'urgence -->
-            <div class="stepper-content d-none" data-step="2">
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label class="form-label">Personne à contacter en cas d'urgence</label>
-                  <input type="text" class="form-control" name="urgence" id="urgence" placeholder="Nom et prénom" />
-                </div>
-                
-                <div class="col-md-6">
-                  <label class="form-label">Téléphone d'urgence</label>
-                  <input type="text" class="form-control" name="contactUrgence" id="contactUrgence" placeholder="+237" />
-                </div>
-              </div>
-            </div>
-
-            <!-- Step 3: Informations administratives -->
-            <div class="stepper-content d-none" data-step="3">
-              <div class="row g-3">
-                <div class="col-md-4">
-                  <label class="form-label">Date de consultation <span class="text-danger">*</span></label>
-                  <input type="date" class="form-control" name="date" id="date" required />
-                  <div class="invalid-feedback" id="error-date"></div>
-                </div>
-                
-                <div class="col-md-4">
-                  <label class="form-label">Consulteur <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control" name="consulteur" id="consulteur" required />
-                  <div class="invalid-feedback" id="error-consulteur"></div>
-                </div>
-                
-                <div class="col-md-4">
-                  <label class="form-label">Enregistré par <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control" name="printBy" id="printBy" required />
-                  <div class="invalid-feedback" id="error-printBy"></div>
-                </div>
-                
-                <div class="col-md-12">
-                  <label class="form-label">Commentaire</label>
-                  <textarea class="form-control" name="commentaire" id="commentaire" rows="3"></textarea>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Annuler</button>
-            <button type="button" class="btn btn-label-primary" id="btnPrevStep" onclick="prevStep()" style="display: none;">Précédent</button>
-            <button type="button" class="btn btn-label-primary" id="btnNextStep" onclick="nextStep()">Suivant</button>
-            <button type="submit" class="btn btn-primary d-none" id="btnSubmit">Enregistrer</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
+  <!-- Modal Patient -->
+  <div th:replace="~{fragments/patients/modals/modal-patient}"></div>
 
   <!-- Modal Paramètres Patient -->
-  <div class="modal fade" id="modalParametres" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Saisie des paramètres du patient</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <form id="parametresForm" th:action="@{/parametres-patient/create}" method="post">
-          <div class="modal-body p-4">
-            <input type="hidden" id="parametreId" name="id" />
-            <input type="hidden" id="codePatientParam" name="codePatient" />
-            
-            <div class="alert alert-info mb-4">
-              <i class="bx bx-info-circle me-2"></i>
-              <strong>Patient :</strong> <span id="parametresPatientName"></span> (<span id="parametresPatientCode"></span>)
-            </div>
-            
-            <div class="row g-3">
-              <div class="col-md-3">
-                <label class="form-label">Date <span class="text-danger">*</span></label>
-                <input type="date" class="form-control" name="date" id="paramDate" required />
-                <div class="invalid-feedback" id="error-paramDate"></div>
-              </div>
-              
-              <div class="col-md-3">
-                <label class="form-label">Heure</label>
-                <input type="time" class="form-control" name="heure" id="paramHeure" />
-              </div>
-              
-              <div class="col-md-3">
-                <label class="form-label">Code traitement</label>
-                <input type="text" class="form-control" name="codeTraitement" id="codeTraitement" />
-              </div>
-              
-              <div class="col-md-3">
-                <label class="form-label">Source <span class="text-danger">*</span></label>
-                <select class="form-select" name="source" id="source" required>
-                  <option value="">Sélectionner</option>
-                  <option value="Consultation">Consultation</option>
-                  <option value="Urgence">Urgence</option>
-                  <option value="Hospitalisation">Hospitalisation</option>
-                  <option value="Suivi">Suivi</option>
-                </select>
-                <div class="invalid-feedback" id="error-source"></div>
-              </div>
-              
-              <!-- Paramètres vitaux -->
-              <div class="col-12 mt-3">
-                <h6 class="mb-3">Paramètres vitaux</h6>
-              </div>
-              
-              <div class="col-md-3">
-                <label class="form-label">PAS (mmHg)</label>
-                <input type="number" class="form-control" name="pas" id="pas" step="1" min="0" />
-              </div>
-              
-              <div class="col-md-3">
-                <label class="form-label">PAD (mmHg)</label>
-                <input type="number" class="form-control" name="pad" id="pad" step="1" min="0" />
-              </div>
-              
-              <div class="col-md-3">
-                <label class="form-label">PAM (mmHg)</label>
-                <input type="number" class="form-control" name="ta" id="pam" step="0.1" min="0" readonly />
-                <small class="text-muted">Calculé automatiquement</small>
-              </div>
-              
-              <div class="col-md-3">
-                <label class="form-label">FC (bpm)</label>
-                <input type="number" class="form-control" name="fc" id="fc" step="1" min="0" />
-              </div>
-              
-              <div class="col-md-3">
-                <label class="form-label">FR (cpm)</label>
-                <input type="number" class="form-control" name="fr" id="fr" step="1" min="0" />
-              </div>
-              
-              <div class="col-md-3">
-                <label class="form-label">Température (°C)</label>
-                <input type="number" class="form-control" name="temp" id="temp" step="0.1" min="0" />
-              </div>
-              
-              <div class="col-md-3">
-                <label class="form-label">SaO2 (%)</label>
-                <input type="text" class="form-control" name="sa02" id="sa02" />
-              </div>
-              
-              <div class="col-md-3">
-                <label class="form-label">Diurèse (ml)</label>
-                <input type="number" class="form-control" name="duirese" id="duirese" step="0.1" min="0" />
-              </div>
-              
-              <!-- Paramètres anthropométriques -->
-              <div class="col-12 mt-3">
-                <h6 class="mb-3">Paramètres anthropométriques</h6>
-              </div>
-              
-              <div class="col-md-4">
-                <label class="form-label">Poids (Kg)</label>
-                <input type="number" class="form-control" name="poids" id="poids" step="0.1" min="0" />
-              </div>
-              
-              <div class="col-md-4">
-                <label class="form-label">Taille (cm)</label>
-                <input type="number" class="form-control" name="taille" id="taille" step="0.1" min="0" />
-              </div>
-              
-              <div class="col-md-4">
-                <label class="form-label">IMC (Kg/m²)</label>
-                <input type="text" class="form-control" name="imc" id="imc" readonly />
-                <small class="text-muted">Calculé automatiquement</small>
-              </div>
-              
-              <!-- Autres paramètres -->
-              <div class="col-12 mt-3">
-                <h6 class="mb-3">Autres paramètres</h6>
-              </div>
-              
-              <div class="col-md-4">
-                <label class="form-label">DDR (Date des dernières règles)</label>
-                <input type="date" class="form-control" name="ddr" id="ddr" />
-              </div>
-              
-              <div class="col-md-4">
-                <label class="form-label">Glycémie (mg/dl)</label>
-                <input type="number" class="form-control" name="glycemie" id="glycemie" step="1" min="0" />
-              </div>
-              
-              <div class="col-md-4">
-                <label class="form-label">PB</label>
-                <input type="text" class="form-control" name="pb" id="pb" />
-              </div>
-              
-              <div class="col-md-4">
-                <label class="form-label">PC</label>
-                <input type="text" class="form-control" name="pc" id="pc" />
-              </div>
-              
-              <div class="col-md-8">
-                <label class="form-label">Autres</label>
-                <textarea class="form-control" name="autre" id="autre" rows="2"></textarea>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Annuler</button>
-            <button type="submit" class="btn btn-primary">Enregistrer</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
+  <div th:replace="~{fragments/patients/modals/modal-parametres}"></div>
 
   <!-- Modal de Confirmation -->
   <div class="modal fade" id="modalConfirm" tabindex="-1" aria-hidden="true">
@@ -577,17 +212,17 @@
     let currentPatientName = null;
 
     // Initialisation
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('date')?.setAttribute('value', today);
       document.getElementById('paramDate')?.setAttribute('value', today);
-      
+
       setupCalculations();
       setupPatientForm();
       setupParametresForm();
       setupTableActions();
       setupRealTimeFilters();
-      
+
       // Parser et afficher les erreurs backend
       parseBackendErrors();
     });
@@ -596,16 +231,16 @@
     function setupTableActions() {
       // Utiliser la délégation d'événements pour gérer les boutons même s'ils sont ajoutés dynamiquement
       const patientsTable = document.querySelector('.table');
-      
+
       if (patientsTable) {
         // Bouton éditer patient
-        patientsTable.addEventListener('click', function(e) {
+        patientsTable.addEventListener('click', function (e) {
           if (e.target.closest('.btn-edit-patient')) {
             const btn = e.target.closest('.btn-edit-patient');
             const patientId = btn.getAttribute('data-patient-id');
             editPatient(parseInt(patientId));
           }
-          
+
           // Bouton afficher paramètres
           if (e.target.closest('.btn-show-parametres')) {
             const btn = e.target.closest('.btn-show-parametres');
@@ -613,7 +248,7 @@
             const name = btn.getAttribute('data-patient-name');
             showParametresModal(code, name);
           }
-          
+
           // Bouton supprimer patient
           if (e.target.closest('.btn-delete-patient')) {
             const btn = e.target.closest('.btn-delete-patient');
@@ -623,11 +258,11 @@
           }
         });
       }
-      
+
       // Délégation pour les paramètres (table générée dynamiquement)
       const parametresCard = document.getElementById('parametresCard');
       if (parametresCard) {
-        parametresCard.addEventListener('click', function(e) {
+        parametresCard.addEventListener('click', function (e) {
           if (e.target.closest('.btn-delete-parametre')) {
             const btn = e.target.closest('.btn-delete-parametre');
             const parametreId = parseInt(btn.getAttribute('data-parametre-id'));
@@ -641,10 +276,10 @@
     function parseBackendErrors() {
       const errorAlert = document.querySelector('.alert-danger');
       if (!errorAlert) return;
-      
+
       const errorText = errorAlert.textContent.trim();
       if (!errorText) return;
-      
+
       // Mapping des messages d'erreur aux champs
       const errorMapping = {
         'Nom du patient obligatoire': 'noms',
@@ -657,7 +292,7 @@
         'Le code patient doit être renseigné': 'codePatient',
         'La source des paramètres': 'source'
       };
-      
+
       // Chercher le champ correspondant
       for (const [message, fieldName] of Object.entries(errorMapping)) {
         if (errorText.includes(message)) {
@@ -675,14 +310,14 @@
               errorElement.textContent = errorText;
               field.parentNode.appendChild(errorElement);
             }
-            
+
             // Ouvrir le modal si fermé
             const modal = document.getElementById('modalPatient');
             if (modal && !modal.classList.contains('show')) {
               const bsModal = new bootstrap.Modal(modal);
               bsModal.show();
             }
-            
+
             // Aller à l'étape appropriée
             if (fieldName === 'noms' || fieldName === 'sexe' || fieldName === 'dateNaissance' || fieldName === 'phone') {
               currentStep = 1;
@@ -691,7 +326,7 @@
               currentStep = 3;
               resetStepper();
             }
-            
+
             // Scroll vers le champ
             field.scrollIntoView({ behavior: 'smooth', block: 'center' });
             break;
@@ -707,11 +342,11 @@
           document.querySelector(`.stepper-content[data-step="${currentStep}"]`).classList.add('d-none');
           document.querySelector(`.stepper-item:nth-child(${currentStep})`).classList.remove('active');
           document.querySelector(`.stepper-item:nth-child(${currentStep})`).classList.add('completed');
-          
+
           currentStep++;
           document.querySelector(`.stepper-content[data-step="${currentStep}"]`).classList.remove('d-none');
           document.querySelector(`.stepper-item:nth-child(${currentStep})`).classList.add('active');
-          
+
           updateStepperButtons();
         }
       }
@@ -721,12 +356,12 @@
       if (currentStep > 1) {
         document.querySelector(`.stepper-content[data-step="${currentStep}"]`).classList.add('d-none');
         document.querySelector(`.stepper-item:nth-child(${currentStep})`).classList.remove('active');
-        
+
         currentStep--;
         document.querySelector(`.stepper-content[data-step="${currentStep}"]`).classList.remove('d-none');
         document.querySelector(`.stepper-item:nth-child(${currentStep})`).classList.add('active');
         document.querySelector(`.stepper-item:nth-child(${currentStep})`).classList.remove('completed');
-        
+
         updateStepperButtons();
       }
     }
@@ -735,17 +370,34 @@
       const btnPrev = document.getElementById('btnPrevStep');
       const btnNext = document.getElementById('btnNextStep');
       const btnSubmit = document.getElementById('btnSubmit');
-      
-      btnPrev.style.display = currentStep > 1 ? 'inline-block' : 'none';
-      btnNext.style.display = currentStep < totalSteps ? 'inline-block' : 'none';
-      btnSubmit.classList.toggle('d-none', currentStep < totalSteps);
+      const hasStepper = document.querySelector('.stepper-content') != null;
+      if (hasStepper) {
+        if (btnPrev) btnPrev.style.display = currentStep > 1 ? 'inline-block' : 'none';
+        if (btnNext) btnNext.style.display = currentStep < totalSteps ? 'inline-block' : 'none';
+        if (btnSubmit) btnSubmit.classList.toggle('d-none', currentStep < totalSteps);
+      } else {
+        if (btnSubmit) btnSubmit.classList.remove('d-none');
+      }
     }
 
     function validateStep(step) {
-      let isValid = true;
-      const stepContent = document.querySelector(`.stepper-content[data-step="${step}"]`);
-      const requiredFields = stepContent.querySelectorAll('[required]');
-      
+      const stepContent = document.querySelector('.stepper-content[data-step="' + step + '"]');
+      if (!stepContent) {
+        var required = document.querySelectorAll('#patientForm [required]');
+        var allValid = true;
+        for (var i = 0; i < required.length; i++) {
+          if (!required[i].value.trim()) {
+            required[i].classList.add('is-invalid');
+            allValid = false;
+          } else {
+            required[i].classList.remove('is-invalid');
+          }
+        }
+        return allValid;
+      }
+      var isValid = true;
+      var requiredFields = stepContent.querySelectorAll('[required]');
+
       requiredFields.forEach(field => {
         if (!field.value.trim()) {
           isValid = false;
@@ -762,7 +414,7 @@
           }
         }
       });
-      
+
       return isValid;
     }
 
@@ -771,7 +423,7 @@
       const pasInput = document.getElementById('pas');
       const padInput = document.getElementById('pad');
       const pamInput = document.getElementById('pam');
-      
+
       if (pasInput && padInput && pamInput) {
         function calculatePAM() {
           const pas = parseFloat(pasInput.value) || 0;
@@ -786,11 +438,11 @@
         pasInput.addEventListener('input', calculatePAM);
         padInput.addEventListener('input', calculatePAM);
       }
-      
+
       const poidsInput = document.getElementById('poids');
       const tailleInput = document.getElementById('taille');
       const imcInput = document.getElementById('imc');
-      
+
       if (poidsInput && tailleInput && imcInput) {
         function calculateIMC() {
           const poids = parseFloat(poidsInput.value) || 0;
@@ -806,6 +458,37 @@
         poidsInput.addEventListener('input', calculateIMC);
         tailleInput.addEventListener('input', calculateIMC);
       }
+
+      const btnCalculerTerme = document.getElementById('btnCalculerTerme');
+      const ddrInput = document.getElementById('ddr');
+      const termePrevuDisplay = document.getElementById('termePrevuDisplay');
+      if (btnCalculerTerme && ddrInput && termePrevuDisplay) {
+        btnCalculerTerme.addEventListener('click', function () {
+          if (!ddrInput.value) {
+            termePrevuDisplay.textContent = 'Saisir la DDR puis cliquer sur Calculer.';
+            return;
+          }
+          const d = new Date(ddrInput.value + 'T12:00:00');
+          d.setDate(d.getDate() + 281);
+          termePrevuDisplay.textContent = 'Terme prévu : ' + d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        });
+      }
+    }
+
+    // Active/désactive le bouton Enregistrer selon les champs requis
+    function updatePatientSubmitButton() {
+      var btn = document.getElementById('btnSubmit');
+      var form = document.getElementById('patientForm');
+      if (!btn || !form) return;
+      var required = form.querySelectorAll('[required]');
+      var allOk = true;
+      for (var i = 0; i < required.length; i++) {
+        if (!required[i].value || !required[i].value.trim()) {
+          allOk = false;
+          break;
+        }
+      }
+      btn.disabled = !allOk;
     }
 
     // Configuration du formulaire patient
@@ -813,54 +496,108 @@
       const modalPatient = document.getElementById('modalPatient');
       const patientForm = document.getElementById('patientForm');
       const btnAddPatient = document.querySelector('[data-bs-target="#modalPatient"]');
-      
+
       if (btnAddPatient) {
-        btnAddPatient.addEventListener('click', function() {
-          patientForm.reset();
-          document.getElementById('patientId').value = '';
+        btnAddPatient.addEventListener('click', function () {
+          if (patientForm) patientForm.reset();
+          var pid = document.getElementById('patientId');
+          if (pid) pid.value = '';
           patientForm.setAttribute('action', '/patients/create');
-          document.getElementById('modalPatientTitle').innerHTML = 'Enregistrement d\'un patient';
+          var titleEl = document.getElementById('modalPatientTitle');
+          if (titleEl) titleEl.innerHTML = 'Enregistrement d\'un patient';
           currentStep = 1;
           resetStepper();
-          const today = new Date().toISOString().split('T')[0];
-          document.getElementById('date').value = today;
+          var dateEl = document.getElementById('date');
+          if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
+          var d1 = document.getElementById('contactNomDisplay');
+          var d2 = document.getElementById('contactRelationDisplay');
+          var d3 = document.getElementById('contactTelDisplay');
+          if (d1) d1.textContent = '\u2014';
+          if (d2) d2.textContent = '\u2014';
+          if (d3) d3.textContent = '\u2014';
+          var wrap = document.getElementById('relationUrgenceAutreWrap');
+          var autreInput = document.getElementById('relationUrgenceAutre');
+          if (wrap) wrap.classList.add('d-none');
+          if (autreInput) autreInput.value = '';
           clearErrors();
+          updatePatientSubmitButton();
+          var lbl = document.getElementById('btnSubmitLabel');
+          if (lbl) lbl.textContent = 'Enregistrer';
         });
       }
-      
+
       if (patientForm) {
-        patientForm.addEventListener('submit', function(e) {
+        patientForm.addEventListener('input', updatePatientSubmitButton);
+        patientForm.addEventListener('change', updatePatientSubmitButton);
+        setupRelationUrgenceAutre();
+        patientForm.addEventListener('submit', function (e) {
           e.preventDefault();
           if (!validateStep(currentStep)) {
             return;
           }
-          
+
           const formAction = patientForm.getAttribute('action');
           const isEdit = formAction.includes('/edit/');
           const patientName = document.getElementById('noms').value || 'ce patient';
-          
+
           showConfirmModal(
             isEdit ? 'Modifier le patient' : 'Créer un nouveau patient',
-            isEdit 
+            isEdit
               ? `Êtes-vous sûr de vouloir modifier les informations de <strong>${patientName}</strong> ?`
               : `Êtes-vous sûr de vouloir créer un nouveau patient avec le nom <strong>${patientName}</strong> ?`,
-            function() {
+            function () {
               patientForm.submit();
             }
           );
         });
       }
-      
+
       if (modalPatient) {
-        modalPatient.addEventListener('hidden.bs.modal', function() {
+        modalPatient.addEventListener('hidden.bs.modal', function () {
           patientForm.reset();
           document.getElementById('patientId').value = '';
           patientForm.setAttribute('action', '/patients/create');
           currentStep = 1;
           resetStepper();
           clearErrors();
+          updatePatientSubmitButton();
+          var lbl = document.getElementById('btnSubmitLabel');
+          if (lbl) lbl.textContent = 'Enregistrer';
+          var wrap = document.getElementById('relationUrgenceAutreWrap');
+          var autreInput = document.getElementById('relationUrgenceAutre');
+          if (wrap) wrap.classList.add('d-none');
+          if (autreInput) autreInput.value = '';
         });
       }
+    }
+
+    function setupRelationUrgenceAutre() {
+      var relationSelect = document.getElementById('relationUrgence');
+      var wrap = document.getElementById('relationUrgenceAutreWrap');
+      var autreInput = document.getElementById('relationUrgenceAutre');
+      var displayRelation = document.getElementById('contactRelationDisplay');
+      if (!relationSelect || !wrap || !autreInput) return;
+      function updateRelationDisplay() {
+        if (!displayRelation) return;
+        if (relationSelect.value === 'Autre') {
+          var v = autreInput.value.trim();
+          displayRelation.textContent = v || '\u2014';
+        } else {
+          displayRelation.textContent = relationSelect.value ? relationSelect.options[relationSelect.selectedIndex].text : '\u2014';
+        }
+      }
+      relationSelect.addEventListener('change', function () {
+        if (relationSelect.value === 'Autre') {
+          wrap.classList.remove('d-none');
+          autreInput.focus();
+        } else {
+          wrap.classList.add('d-none');
+          autreInput.value = '';
+        }
+        updateRelationDisplay();
+      });
+      autreInput.addEventListener('input', updateRelationDisplay);
+      autreInput.addEventListener('change', updateRelationDisplay);
     }
 
     function resetStepper() {
@@ -884,9 +621,9 @@
       const modalParametres = document.getElementById('modalParametres');
       const parametresForm = document.getElementById('parametresForm');
       const btnAddParametres = document.getElementById('btnAddParametres');
-      
+
       if (btnAddParametres) {
-        btnAddParametres.addEventListener('click', function() {
+        btnAddParametres.addEventListener('click', function () {
           if (!currentPatientCode) {
             alert('Veuillez d\'abord sélectionner un patient');
             return;
@@ -894,29 +631,32 @@
           showParametresModal(currentPatientCode, currentPatientName);
         });
       }
-      
+
       if (parametresForm) {
-        parametresForm.addEventListener('submit', function(e) {
+        parametresForm.addEventListener('submit', function (e) {
           e.preventDefault();
           const patientName = currentPatientName || 'le patient';
           const source = document.getElementById('source').value || 'non spécifiée';
-          
+
           showConfirmModal(
             'Enregistrer les paramètres',
             `Êtes-vous sûr de vouloir enregistrer les paramètres cliniques pour <strong>${patientName}</strong> ?<br><small class="text-muted">Source : ${source}</small>`,
-            function() {
+            function () {
               parametresForm.submit();
             }
           );
         });
       }
-      
+
       if (modalParametres) {
-        modalParametres.addEventListener('hidden.bs.modal', function() {
+        modalParametres.addEventListener('hidden.bs.modal', function () {
           parametresForm.reset();
           document.getElementById('parametreId').value = '';
           const today = new Date().toISOString().split('T')[0];
-          document.getElementById('paramDate').value = today;
+          const paramDateEl = document.getElementById('paramDate');
+          if (paramDateEl) paramDateEl.value = today;
+          const termeDisplay = document.getElementById('termePrevuDisplay');
+          if (termeDisplay) termeDisplay.textContent = '';
           clearErrors();
         });
       }
@@ -951,11 +691,21 @@
           document.getElementById('consulteur').value = patient.consulteur || '';
           document.getElementById('printBy').value = patient.printBy || '';
           document.getElementById('commentaire').value = patient.commentaire || '';
-          
+
+          const d1 = document.getElementById('contactNomDisplay');
+          const d2 = document.getElementById('contactRelationDisplay');
+          const d3 = document.getElementById('contactTelDisplay');
+          if (d1) d1.textContent = patient.urgence || '—';
+          if (d2) d2.textContent = '—';
+          if (d3) d3.textContent = patient.contactUrgence || '—';
+
           const form = document.getElementById('patientForm');
           form.setAttribute('action', '/patients/edit/' + patient.id);
           document.getElementById('modalPatientTitle').innerHTML = 'Modifier un patient';
-          
+          var lbl = document.getElementById('btnSubmitLabel');
+          if (lbl) lbl.textContent = 'Modifier';
+          updatePatientSubmitButton();
+
           const modal = new bootstrap.Modal(document.getElementById('modalPatient'));
           modal.show();
         })
@@ -968,16 +718,16 @@
     function showParametresModal(code, name) {
       currentPatientCode = code;
       currentPatientName = name;
-      
+
       document.getElementById('codePatientParam').value = code;
       document.getElementById('parametresPatientCode').textContent = code;
       document.getElementById('parametresPatientName').textContent = name;
-      
+
       document.getElementById('parametresCard').style.display = 'block';
       document.getElementById('selectedPatientName').textContent = name + ' (' + code + ')';
-      
+
       loadParametres(code);
-      
+
       const modal = new bootstrap.Modal(document.getElementById('modalParametres'));
       modal.show();
     }
@@ -1024,12 +774,12 @@
       showConfirmModal(
         'Supprimer les paramètres',
         'Êtes-vous sûr de vouloir supprimer ces paramètres cliniques ?<br><small class="text-danger">Cette action est irréversible.</small>',
-        function() {
+        function () {
           fetch('/parametres-patient/delete/' + id, { method: 'GET' })
             .then(response => {
               if (response.ok || response.redirected) {
                 if (currentPatientCode) {
-                  setTimeout(function() {
+                  setTimeout(function () {
                     loadParametres(currentPatientCode);
                   }, 300);
                 } else {
@@ -1051,7 +801,7 @@
       showConfirmModal(
         'Supprimer le patient',
         `Êtes-vous sûr de vouloir supprimer le patient <strong>${name}</strong> ?<br><small class="text-danger">Cette action est irréversible et supprimera également tous ses paramètres.</small>`,
-        function() {
+        function () {
           window.location.href = '/patients/delete/' + id;
         }
       );
@@ -1061,16 +811,16 @@
       const modal = document.getElementById('modalConfirm');
       document.getElementById('confirmModalTitle').textContent = title;
       document.getElementById('confirmModalMessage').innerHTML = message;
-      
+
       const newBtn = document.getElementById('confirmModalBtn').cloneNode(true);
       document.getElementById('confirmModalBtn').parentNode.replaceChild(newBtn, document.getElementById('confirmModalBtn'));
-      
-      newBtn.addEventListener('click', function() {
+
+      newBtn.addEventListener('click', function () {
         const bsModal = bootstrap.Modal.getInstance(modal);
         bsModal.hide();
         if (onConfirm) onConfirm();
       });
-      
+
       const bsModal = new bootstrap.Modal(modal);
       bsModal.show();
     }
@@ -1116,7 +866,7 @@
         currentSearchRequest = controller;
 
         // Construire l'URL avec ou sans paramètres
-        const url = params.toString() 
+        const url = params.toString()
           ? '/patients/api/search?' + params.toString()
           : '/patients/api/search';
 
@@ -1127,22 +877,22 @@
             'Accept': 'application/json'
           }
         })
-        .then(response => {
-          if (!response.ok) throw new Error('Erreur de recherche');
-          return response.json();
-        })
-        .then(patients => {
-          updatePatientsTable(patients);
-          filterSpinner.classList.add('d-none');
-          currentSearchRequest = null;
-        })
-        .catch(error => {
-          if (error.name !== 'AbortError') {
-            console.error('Erreur lors de la recherche:', error);
+          .then(response => {
+            if (!response.ok) throw new Error('Erreur de recherche');
+            return response.json();
+          })
+          .then(patients => {
+            updatePatientsTable(patients);
             filterSpinner.classList.add('d-none');
-          }
-          currentSearchRequest = null;
-        });
+            currentSearchRequest = null;
+          })
+          .catch(error => {
+            if (error.name !== 'AbortError') {
+              console.error('Erreur lors de la recherche:', error);
+              filterSpinner.classList.add('d-none');
+            }
+            currentSearchRequest = null;
+          });
       }
 
       // Debounce function - attendre 250ms après la dernière frappe pour réduire la latence
@@ -1172,7 +922,7 @@
     // Mettre à jour la table des patients
     function updatePatientsTable(patients) {
       const tbody = document.getElementById('patientsTableBody');
-      
+
       if (!tbody) return;
 
       if (!patients || patients.length === 0) {
@@ -1200,7 +950,7 @@
         const statutClass = patient.estActif ? 'bg-label-success' : 'bg-label-secondary';
         const statutText = patient.estActif ? 'Actif' : 'Inactif';
         const dateNaissance = patient.dateNaissance ? formatDate(patient.dateNaissance) : '-';
-        
+
         const code = escapeHtml(patient.code || '');
         const noms = escapeHtml(patient.noms || '');
         const sexe = escapeHtml(patient.sexe || '');
@@ -1349,7 +1099,8 @@
       border-width: 0.15em;
     }
 
-    .form-control:focus, .form-select:focus {
+    .form-control:focus,
+    .form-select:focus {
       border-color: #696cff;
       box-shadow: 0 0 0 0.2rem rgba(105, 108, 255, 0.1);
     }

@@ -1,0 +1,21 @@
+<div th:fragment="patientsFilters" class="d-flex gap-2 align-items-center">
+
+    <input type="date" class="form-control form-control-sm" id="filterDateDebut">
+    <input type="date" class="form-control form-control-sm" id="filterDateFin">
+  
+    <input type="text" class="form-control form-control-sm"
+           id="filterCode" placeholder="Code patient">
+  
+    <input type="text" class="form-control form-control-sm"
+           id="filterSearch" placeholder="Nom et prénom">
+  
+    <select id="filterSexe" class="form-select form-select-sm">
+      <option value="">Tous</option>
+      <option value="Masculin">Masculin</option>
+      <option value="Féminin">Féminin</option>
+    </select>
+  
+    <div id="filterSpinner" class="spinner-border spinner-border-sm d-none"></div>
+  
+  </div>
+  

@@ -1,0 +1,38 @@
+<table th:fragment="patientsTable"
+       id="patientsTable"
+       class="table table-hover align-middle">
+
+  <thead class="table-light">
+    <tr>
+      <th>Code</th>
+      <th>Noms et Prénom</th>
+      <th>Sexe</th>
+      <th>Date naissance</th>
+      <th>Téléphone</th>
+      <th>Type</th>
+      <th>Statut</th>
+      <th class="text-center">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody id="patientsTableBody">
+    <tr th:each="patient : ${patients}">
+      <td><span th:text="${patient.code}" class="badge bg-label-primary"></span></td>
+      <td th:text="${patient.noms}"></td>
+      <td th:text="${patient.sexe}"></td>
+      <td th:text="${#temporals.format(patient.dateNaissance,'dd/MM/yyyy')}"></td>
+      <td th:text="${patient.phone}"></td>
+      <td th:text="${patient.typePatient}"></td>
+      <td>
+        <span th:text="${patient.estActif ? 'Actif':'Inactif'}"></span>
+      </td>
+      <td class="text-center">
+        <button class="btn btn-sm btn-edit-patient"
+                th:data-patient-id="${patient.id}">
+          ✏️
+        </button>
+      </td>
+    </tr>
+  </tbody>
+
+</table>

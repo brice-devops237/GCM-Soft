@@ -1,0 +1,18 @@
+<div th:fragment="patientsCard" class="card">
+    <div class="card-body">
+  
+      <div class="d-flex justify-content-between mb-4">
+        <button class="btn btn-primary btn-sm"
+                data-bs-toggle="modal"
+                data-bs-target="#modalPatient">
+          <i class="bx bx-plus-circle"></i> Ajouter patient
+        </button>
+  
+        <div th:replace="~{fragments/patients/content/patients-filters :: patientsFilters}"></div>
+      </div>
+  
+      <div th:replace="~{fragments/patients/content/patients-table :: patientsTable}"></div>
+  
+    </div>
+  </div>
+  

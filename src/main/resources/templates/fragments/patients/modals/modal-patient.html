@@ -1,0 +1,207 @@
+<div class="modal fade" id="modalPatient" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="max-height: 90vh;">
+    <div class="modal-content d-flex flex-column" style="max-height: 90vh;">
+      <div class="modal-header flex-shrink-0">
+        <h5 class="modal-title" id="modalPatientTitle">Enregistrement d'un patient</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form id="patientForm" th:action="@{/patients/create}" method="post" class="d-flex flex-column flex-grow-1" style="min-height: 0;">
+        <div class="modal-body p-4 overflow-y-auto flex-grow-1" style="min-height: 0; max-height: calc(90vh - 140px);">
+          <input type="hidden" id="patientId" name="id" />
+          <input type="hidden" name="date" id="date" />
+          <input type="hidden" name="consulteur" id="consulteur" value="CAISSE" />
+          <input type="hidden" name="printBy" id="printBy" value="CAISSE" />
+          <input type="hidden" name="commentaire" id="commentaire" />
+
+          <div class="row g-3">
+            <!-- Colonne gauche : xs/sm pleine largeur, md+ 7/12 -->
+            <div class="col-12 col-lg-7">
+              <div class="mb-3">
+                <label class="form-label">Noms et Prénom <span class="text-danger">*</span></label>
+                <input type="text" class="form-control form-control-sm" name="noms" id="noms" required />
+                <div class="invalid-feedback" id="error-noms"></div>
+              </div>
+
+              <div class="row g-2 mb-3">
+                <div class="col-12 col-sm-6">
+                  <label class="form-label">Type de patient</label>
+                  <select class="form-select form-select-sm" name="typePatient" id="typePatient">
+                    <option value="Normal" selected>Normal</option>
+                    <option value="Privé/VIP">Privé/VIP</option>
+                    <option value="Urgent">Urgent</option>
+                  </select>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label">Sexe <span class="text-danger">*</span></label>
+                  <select class="form-select form-select-sm" name="sexe" id="sexe" required>
+                    <option value="">Sélectionner</option>
+                    <option value="Masculin" selected>Masculin</option>
+                    <option value="Féminin">Féminin</option>
+                  </select>
+                  <div class="invalid-feedback" id="error-sexe"></div>
+                </div>
+              </div>
+              <div class="row g-2 mb-3">
+                <div class="col-12 col-sm-6">
+                  <label class="form-label">Date de naissance <span class="text-danger">*</span></label>
+                  <div class="input-group input-group-sm">
+                    <input type="date" class="form-control form-control-sm" name="dateNaissance" id="dateNaissance" required />
+                    <button type="button" class="btn btn-outline-secondary" tabindex="-1" title="Calendrier">
+                      <i class="bx bx-calendar"></i>
+                    </button>
+                  </div>
+                  <div class="invalid-feedback" id="error-dateNaissance"></div>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label">Lieu de naissance</label>
+                  <input type="text" class="form-control form-control-sm" name="lieuNaissance" id="lieuNaissance" />
+                </div>
+              </div>
+              <div class="row g-2 mb-3">
+                <div class="col-12 col-sm-6">
+                  <label class="form-label">Adresse</label>
+                  <input type="text" class="form-control form-control-sm" name="adresse" id="adresse" />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label">Nationalité</label>
+                  <input type="text" class="form-control form-control-sm" name="nationalite" id="nationalite" />
+                </div>
+              </div>
+              <div class="row g-2 mb-3">
+                <div class="col-12 col-sm-6 col-md-4">
+                  <label class="form-label">Ville</label>
+                  <input type="text" class="form-control form-control-sm" name="ville" id="ville" />
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                  <label class="form-label">Profession</label>
+                  <input type="text" class="form-control form-control-sm" name="profession" id="profession" />
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                  <label class="form-label">Tel. <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control form-control-sm" name="phone" id="phone" placeholder="+237" value="+237" required />
+                  <div class="invalid-feedback" id="error-phone"></div>
+                </div>
+              </div>
+              <div class="row g-2 mb-3">
+                <div class="col-12 col-sm-6 col-md-4">
+                  <label class="form-label">C.N.I ou N° Passeport</label>
+                  <input type="text" class="form-control form-control-sm" name="cni" id="cni" />
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                  <label class="form-label">Nom de la Mère</label>
+                  <input type="text" class="form-control form-control-sm" name="nomMere" id="nomMere" />
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                  <label class="form-label">Nom du Père</label>
+                  <input type="text" class="form-control form-control-sm" name="nomPere" id="nomPere" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Colonne droite : xs/sm pleine largeur, md+ 5/12 -->
+            <div class="col-12 col-lg-5">
+              <div class="row g-2 mb-3">
+                <div class="col-12 col-sm-6">
+                  <label class="form-label">Ethnie</label>
+                  <input type="text" class="form-control form-control-sm" name="ethnie" id="ethnie" />
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label">Religion</label>
+                  <input type="text" class="form-control form-control-sm" name="religion" id="religion" />
+                </div>
+              </div>
+              <div class="row g-2 mb-3">
+                <div class="col-12 col-sm-6">
+                  <label class="form-label">État matrimonial</label>
+                  <select class="form-select form-select-sm" name="etatMatrimonial" id="etatMatrimonial">
+                    <option value="">Sélectionner</option>
+                    <option value="Célibataire" selected>Célibataire</option>
+                    <option value="Marié(e)">Marié(e)</option>
+                    <option value="Divorcé(e)">Divorcé(e)</option>
+                    <option value="Veuf(ve)">Veuf(ve)</option>
+                  </select>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label">Groupe sanguin + Rhésus</label>
+                  <select class="form-select form-select-sm" name="groupe" id="groupe">
+                    <option value="">Sélectionner</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+" selected>AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Personne à contacter en cas d'urgence</label>
+                <input type="text" class="form-control form-control-sm" name="urgence" id="urgence" placeholder="Nom et prénom" />
+              </div>
+              <div class="row g-2 mb-3">
+                <div class="col-12 col-sm-6">
+                  <label class="form-label">Relation avec le patient</label>
+                  <select class="form-select form-select-sm" id="relationUrgence">
+                    <option value="">Sélectionner</option>
+                    <option value="Père" selected>Père</option>
+                    <option value="Mère">Mère</option>
+                    <option value="Conjoint(e)">Conjoint(e)</option>
+                    <option value="Frère / Sœur">Frère / Sœur</option>
+                    <option value="Enfant">Enfant</option>
+                    <option value="Ami(e)">Ami(e)</option>
+                    <option value="Autre">Autre</option>
+                  </select>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <label class="form-label">Téléphone</label>
+                  <input type="text" class="form-control form-control-sm" name="contactUrgence" id="contactUrgence" placeholder="+237" value="+237" />
+                </div>
+                <div id="relationUrgenceAutreWrap" class="col-12 mt-2 d-none">
+                  <label class="form-label small">Précisez la relation</label>
+                  <input type="text" class="form-control form-control-sm" id="relationUrgenceAutre" placeholder="Ex: Oncle, Tuteur..." />
+                </div>
+              </div>
+              <div class="d-flex gap-2 mb-2">
+                <button type="button" class="btn btn-sm btn-outline-danger border rounded" id="btnContactUp" title="Monter">
+                  <i class="bx bx-chevron-up"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-success border rounded" id="btnContactDown" title="Descendre">
+                  <i class="bx bx-chevron-down"></i>
+                </button>
+              </div>
+              <div class="table-responsive mb-3">
+                <table class="table table-sm table-bordered mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Nom et prénom</th>
+                      <th>Lien de parenté</th>
+                      <th>Contact</th>
+                    </tr>
+                  </thead>
+                  <tbody id="contactUrgenceTableBody">
+                    <tr>
+                      <td id="contactNomDisplay" class="text-muted">—</td>
+                      <td id="contactRelationDisplay" class="text-muted">—</td>
+                      <td id="contactTelDisplay" class="text-muted">—</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer flex-shrink-0 py-3">
+          <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary btn-sm ms-auto" id="btnSubmit" disabled title="Remplissez tous les champs obligatoires pour activer l'enregistrement">
+            <i class="bx bx-save me-1"></i> <span id="btnSubmitLabel">Enregistrer</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
