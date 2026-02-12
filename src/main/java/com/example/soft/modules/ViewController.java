@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * Contrôleur simple pour rediriger vers des pages statiques de vues.
@@ -62,18 +63,24 @@ public class ViewController {
     }
 
     /**
-     * Déconnexion : supprime le cookie JWT et redirige vers la page de login.
+     * Déconnexion : supprime le cookie JWT, vide le cache côté réponse et redirige vers /login.
+     * Tant que le token est absent ou invalide, le filtre JWT redirige vers /login avec session=expired.
      *
-     * @param response pour effacer le cookie auth_token
+     * @param response pour effacer le cookie et forcer no-cache
+     * @param redirectAttributes message flash affiché en toast sur la page login
      * @return redirection vers /login
      */
     @GetMapping("/logout")
-    public String logout(HttpServletResponse response) {
+    public String logout(HttpServletResponse response, RedirectAttributes redirectAttributes) {
         Cookie cookie = new Cookie(jwtProperties.getCookieName(), "");
         cookie.setPath("/");
         cookie.setHttpOnly(true);
         cookie.setMaxAge(0);
         response.addCookie(cookie);
+        response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
+        redirectAttributes.addFlashAttribute("success", "Vous avez été déconnecté.");
         return "redirect:/login";
     }
 }

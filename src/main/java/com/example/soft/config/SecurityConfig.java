@@ -56,6 +56,13 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(authenticationEntryPoint)
                 )
+                .headers(headers -> headers
+                        .addHeaderWriter((request, response) -> {
+                            response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+                            response.setHeader("Pragma", "no-cache");
+                            response.setDateHeader("Expires", 0);
+                        })
+                )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

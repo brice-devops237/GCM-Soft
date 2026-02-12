@@ -23,8 +23,8 @@
                             </div>
                         </div>
                         <div class="flex-grow-1">
-                            <h6 class="mb-0" th:text="${username != null ? username : 'John Doe'}">John Doe</h6>
-                            <small class="text-body-secondary" th:text="${role != null ? role : 'Admin'}">Admin</small>
+                            <h6 class="mb-0" th:text="${!#strings.isEmpty(username) ? username : 'Utilisateur'}">Utilisateur</h6>
+                            <small class="text-body-secondary" th:text="${!#strings.isEmpty(role) ? role : 'Utilisateur'}">Utilisateur</small>
                         </div>
                     </div>
                 </a>
@@ -54,9 +54,11 @@
                 <div class="dropdown-divider my-1"></div>
             </li>
 
-            <!-- Logout -->
+            <!-- Logout : dialogue de confirmation puis déconnexion (replace = pas de retour arrière) -->
             <li>
-                <a class="dropdown-item text-danger" th:href="@{/logout}">
+                <a class="dropdown-item text-danger" href="javascript:void(0);" role="button"
+                   th:attr="data-logout-url=@{/logout}"
+                   onclick="return confirmLogout(this);">
                     <i class="icon-base bx bx-power-off icon-md me-3"></i>
                     <span>Déconnexion</span>
                 </a>

@@ -35,6 +35,30 @@
 
   <!-- Main JS -->
   <script th:src="@{/assets/js/main.js}"></script>
+  <script th:src="@{/assets/vendor/libs/select2/select2.js}"></script>
+  <script th:src="@{/assets/vendor/libs/bootstrap-select/bootstrap-select.js}"></script>
+  <script th:src="@{/assets/vendor/libs/typeahead-js/typeahead.js}"></script>
+  <script th:src="@{/assets/vendor/libs/bloodhound/bloodhound.js}"></script>
+  <script th:src="@{/assets/js/forms-typeahead.js}"></script>
+
+  <!-- Modal de confirmation (ConfirmModal.show) -->
+  <script th:src="@{/js/patients/utils/confirm-modal.js}"></script>
+
+  <!-- Déconnexion : modal de confirmation puis redirection (replace = pas de retour arrière) -->
+  <script th:inline="javascript">
+    window.confirmLogout = function(link) {
+      var url = (link && link.getAttribute('data-logout-url')) || /*[[@{/logout}]]*/ '/logout';
+      if (typeof window.ConfirmModal !== 'undefined' && document.getElementById('modalConfirm')) {
+        window.ConfirmModal.show('Déconnexion', 'Voulez-vous vraiment vous déconnecter ?', function() {
+          window.location.replace(url);
+        }, 'btn-danger');
+      } else {
+        if (!confirm('Voulez-vous vraiment vous déconnecter ?')) return false;
+        window.location.replace(url);
+      }
+      return false;
+    };
+  </script>
 
   <!-- Page JS : ajouter ici les scripts spécifiques à la page (ex. ui-toasts.js) -->
 

@@ -1,6 +1,6 @@
 # GCM Soft
 
-Application web de gestion des patients et de leurs paramètres cliniques (signes vitaux, constantes). Authentification par JWT, interface Thymeleaf avec toasts et messages flash.
+Application web de **gestion des patients** et de leurs **paramètres cliniques** (signes vitaux, constantes : PAM, FC, FR, température, SaO2, PAS, PAD, poids, taille, IMC, etc.). Conçue pour un usage en contexte médical ou paramédical, avec authentification par **JWT**, interface **Thymeleaf** (Bootstrap 5), **toasts** (Notyf) et messages flash.
 
 ---
 
@@ -9,13 +9,19 @@ Application web de gestion des patients et de leurs paramètres cliniques (signe
 - [Stack technique](#stack-technique)
 - [Prérequis](#prérequis)
 - [Installation et configuration](#installation-et-configuration)
+- [Premier démarrage et utilisateur par défaut](#premier-démarrage-et-utilisateur-par-défaut)
 - [Lancement](#lancement)
 - [Architecture du projet](#architecture-du-projet)
 - [Fonctionnalités](#fonctionnalités)
+- [Interface utilisateur (menu, profil, déconnexion)](#interface-utilisateur-menu-profil-déconnexion)
+- [Formulaire patient (nationalité, Select2)](#formulaire-patient-nationalité-select2)
 - [Sécurité et authentification](#sécurité-et-authentification)
 - [API et communication frontend / backend](#api-et-communication-frontend--backend)
 - [Messages, toasts et exceptions](#messages-toasts-et-exceptions)
+- [Routes principales](#routes-principales)
+- [Variables d'environnement (production)](#variables-denvironnement-production)
 - [Scripts et commandes](#scripts-et-commandes)
+- [Dépannage](#dépannage)
 
 ---
 
@@ -80,6 +86,19 @@ app.jwt.cookie-name=token
 
 ---
 
+## Premier démarrage et utilisateur par défaut
+
+Au premier lancement, si aucun utilisateur n’existe en base, un **utilisateur racine** est créé automatiquement :
+
+| Champ    | Valeur  |
+|----------|---------|
+| Login    | `root`  |
+| Mot de passe | `root`  |
+
+**Important** : en production, changez immédiatement le mot de passe de cet utilisateur ou désactivez ce compte après avoir créé un compte administrateur.
+
+---
+
 ## Lancement
 
 ### Développement (rechargement automatique)
@@ -110,11 +129,14 @@ src/main/java/com/example/soft/
 ├── SoftApplication.java              # Point d’entrée Spring Boot
 ├── config/                           # Configuration globale
 │   ├── SecurityConfig.java           # Sécurité (JWT, routes publiques/protégées)
+│   ├── CurrentUserModelAdvice.java   # Injection username + servletPath (menu actif, profil)
 │   └── JsonOrRedirectAuthenticationEntryPoint.java  # 401 → JSON ou redirection /login
 └── modules/
     ├── ViewController.java           # Pages : /, /login, /dashboard, /logout, /profile, /settings
     ├── auth/                         # Module authentification
-    │   ├── config/JwtProperties.java
+    │   ├── config/
+    │   │   ├── JwtProperties.java
+    │   │   └── RootUserInitializer.java   # Utilisateur root au premier démarrage
     │   ├── controllers/
     │   │   ├── AuthController.java       # POST /auth/login, /api/auth/login, /api/auth/me, /auth/logout
     │   │   └── AuthantificationController.java  # CRUD /api/auth/users
@@ -152,7 +174,10 @@ src/main/resources/
 │   │   └── patients/                 # patients-core, patients-filters, patients-form, etc.
 │   └── assets/
 └── templates/
-    ├── fragments/                    # head, aside, navbar, footer, js, profile
+    ├── fragments/                    # head, aside, navbar, footer, js, profile, modal-confirm
+    │   └── patients/
+    │       ├── content/               # patients-table (tableau)
+    │       └── modals/                # modal-patient, modal-parametres, modal-patient-nationalite-options
     └── pages/
         ├── authentification/login.html
         ├── dashboard.html
@@ -207,6 +232,23 @@ Champs gérés (entre autres) : date, heure, PAM (ta), FC, FR, température, SaO
 
 ---
 
+## Interface utilisateur (menu, profil, déconnexion)
+
+- **Menu latéral (aside)** : lien « Tableau de bord » vers `/dashboard`, lien « Patients » vers `/patients`. L’élément actif est déterminé par le chemin de la requête (`servletPath`) fourni par `CurrentUserModelAdvice`.
+- **Profil (navbar)** : affichage du **login** de l’utilisateur connecté (pas le rôle dans ce bloc). Données injectées via `CurrentUserModelAdvice` (`username`, `servletPath`).
+- **Déconnexion** : liens « Déconnexion » (aside et profil) ouvrent un **modal de confirmation** avant redirection vers `/logout`. Le cookie JWT est supprimé, un message flash « Déconnexion réussie » peut être affiché sur la page de login.
+- **Session expirée** : si le JWT est invalide ou expiré, le filtre redirige vers `/login?session=expired` ; la page login affiche un toast d’erreur puis nettoie l’URL.
+
+---
+
+## Formulaire patient (nationalité, Select2)
+
+- Le champ **Nationalité** est un **select** enrichi avec **Select2** (recherche, liste déroulante).
+- Les options sont des **gentilés** (nationalités) en français : *Camerounais(e)*, *Français(e)*, *Sénégalais(e)*, *Ivoirien(ne)*, *Belge*, *Américain(e)*, etc. (liste complète dans `templates/fragments/patients/modals/modal-patient-nationalite-options.html`).
+- Select2 est initialisé sur la page patients avec `dropdownParent: $('#modalPatient')` pour un affichage correct dans le modal. En édition, la valeur chargée est synchronisée avec `trigger('change')`.
+
+---
+
 ## Sécurité et authentification
 
 - **Mécanisme** : JWT (HMAC-SHA256), stocké en cookie (nom configurable : `app.jwt.cookie-name`) ou envoyé en en-tête `Authorization: Bearer <token>`.
@@ -249,6 +291,49 @@ Champs gérés (entre autres) : date, heure, PAM (ta), FC, FR, température, SaO
 
 ---
 
+## Routes principales
+
+| Méthode | Route | Description |
+|--------|--------|-------------|
+| GET | `/` | Redirection vers `/login` |
+| GET | `/login` | Page de connexion |
+| POST | `/auth/login` | Connexion (formulaire) → cookie JWT + redirect |
+| GET/POST | `/auth/logout` | Déconnexion (suppression cookie) |
+| GET | `/dashboard` | Tableau de bord (après connexion) |
+| GET | `/profile`, `/settings` | Redirection vers dashboard |
+| GET | `/patients` | Liste des patients (vue Thymeleaf) |
+| POST | `/patients/create` | Création patient |
+| GET | `/patients/api/{id}` | Détail patient (JSON) |
+| POST | `/patients/edit/{id}` | Modification patient |
+| GET | `/patients/delete/{id}` | Suppression patient |
+| GET | `/patients/api/search?...` | Recherche patients (JSON, paramètres : code, noms, sexe, dateDebut, dateFin) |
+| GET | `/parametres-patient/by-code?codePatient=...` | Paramètres d’un patient (JSON) |
+| POST | `/parametres-patient/create` | Création paramètres |
+| GET | `/parametres-patient/get/{id}` | Détail paramètres (JSON) |
+| POST | `/parametres-patient/update` | Mise à jour paramètres (JSON) |
+| GET | `/parametres-patient/delete/{id}` | Suppression paramètres |
+| POST | `/api/auth/login` | Connexion API (JSON) → token |
+| GET | `/api/auth/me` | Utilisateur connecté (JSON) |
+
+---
+
+## Variables d'environnement (production)
+
+En production, il est recommandé de ne pas stocker les secrets dans les fichiers de configuration. Exemple avec des variables d’environnement :
+
+| Variable | Exemple | Usage |
+|----------|---------|--------|
+| `SPRING_DATASOURCE_URL` | `jdbc:mysql://serveur:3306/company_db?...` | URL JDBC MySQL |
+| `SPRING_DATASOURCE_USERNAME` | `app_user` | Utilisateur BDD |
+| `SPRING_DATASOURCE_PASSWORD` | `***` | Mot de passe BDD |
+| `APP_JWT_SECRET` | Clé longue (≥ 32 caractères) | Signature JWT |
+| `APP_JWT_EXPIRATION_MS` | `86400000` | Expiration token (ms) |
+| `SERVER_PORT` | `9111` | Port HTTP |
+
+Sous Linux/macOS : `export APP_JWT_SECRET=...` puis `java -jar target/Soft-0.0.1-SNAPSHOT.jar`. Sous Windows : définir les variables système ou utiliser un fichier `.env` avec un lanceur adapté.
+
+---
+
 ## Scripts et commandes
 
 | Action              | Commande |
@@ -260,11 +345,27 @@ Champs gérés (entre autres) : date, heure, PAM (ta), FC, FR, température, SaO
 
 ---
 
+## Dépannage
+
+| Problème | Piste de résolution |
+|----------|----------------------|
+| **Port 9111 déjà utilisé** | Changer `server.port` dans `application.properties` ou arrêter le processus qui utilise le port. |
+| **Erreur de connexion MySQL** | Vérifier que MySQL est démarré, que l’URL/hôte/port sont corrects, et que l’utilisateur a les droits sur la base. `allowPublicKeyRetrieval=true` peut être nécessaire avec MySQL 8. |
+| **Page blanche ou 404 sur les assets** | Vérifier que les chemins dans `head.html` / `js.html` correspondent aux fichiers sous `static/` (ex. `/assets/`, `/js/`). |
+| **Token invalide / boucle de redirection** | Supprimer le cookie `token` (nom configuré par `app.jwt.cookie-name`) et se reconnecter. Vérifier que la clé JWT n’a pas changé entre deux démarrages si des tokens sont encore valides. |
+| **Select2 ne s’affiche pas (nationalité)** | S’assurer que la librairie Select2 (CSS/JS) est chargée sur la page patients et que l’initialisation JS s’exécute après le chargement du DOM (et éventuellement après l’ouverture du modal). |
+| **Flyway : erreur de migration** | Vérifier que les scripts sous `db/migration/` sont cohérents avec l’état de la base. En dev, `spring.flyway.baseline-on-migrate=true` permet de créer une baseline si la base existait déjà. |
+
+---
+
 ## Résumé des points clés
 
 - **Frontend / backend** : formulaires Thymeleaf + appels `fetch` avec cookie JWT et `credentials: 'same-origin'` ; réponses JSON et flash cohérentes.
 - **Toasts** : tous les retours utilisateur (succès, erreur, session expirée, recherche) passent par `AppToasts` (Notyf).
 - **Exceptions** : erreurs métier et 401 gérées côté client (toast + redirection login si 401).
+- **Utilisateur par défaut** : `root` / `root` créé au premier démarrage si la base est vide.
+- **UI** : menu actif selon `servletPath`, profil (login), déconnexion avec modal de confirmation.
+- **Patient** : champ nationalité en Select2 avec liste de gentilés (Camerounais(e), Français(e), etc.).
 - **Documentation** : ce README décrit l’ensemble des fonctionnalités, la configuration, l’architecture et les flux d’authentification et de données.
 
 Pour toute question ou évolution, se référer à la structure des modules et aux contrôleurs listés ci-dessus.

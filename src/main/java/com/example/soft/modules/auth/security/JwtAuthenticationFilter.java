@@ -46,24 +46,57 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-        try {
-            String token = extractToken(request);
-            if (StringUtils.hasText(token) && jwtService.validateToken(token)) {
-                String login = jwtService.getLoginFromToken(token);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(login);
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+        String token = extractToken(request);
+        if (StringUtils.hasText(token)) {
+            try {
+                if (jwtService.validateToken(token)) {
+                    String login = jwtService.getLoginFromToken(token);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(login);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    // Token invalide ou expiré : déconnexion immédiate sans sommation
+                    clearTokenCookieAndRedirectIfNeeded(request, response);
+                    return;
+                }
+            } catch (Exception e) {
+                log.trace("JWT invalide ou expiré: {}", e.getMessage());
+                clearTokenCookieAndRedirectIfNeeded(request, response);
+                return;
             }
-        } catch (Exception e) {
-            log.trace("JWT invalide ou expiré: {}", e.getMessage());
         }
         filterChain.doFilter(request, response);
+    }
+
+    /**
+     * Supprime le cookie JWT et redirige vers /login pour les requêtes navigateur.
+     * Pour les requêtes API (Accept: application/json ou /api/*), envoie 401 sans redirection.
+     */
+    private void clearTokenCookieAndRedirectIfNeeded(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie(jwtProperties.getCookieName(), "");
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+
+        boolean isApiRequest = request.getRequestURI() != null && request.getRequestURI().startsWith(request.getContextPath() + "/api/");
+        String accept = request.getHeader("Accept");
+        boolean wantsJson = accept != null && accept.contains("application/json");
+
+        if (!isApiRequest && !wantsJson) {
+            response.sendRedirect(request.getContextPath() + "/login?session=expired");
+        } else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"Token invalide ou expiré\"}");
+        }
     }
 
     private String extractToken(HttpServletRequest request) {

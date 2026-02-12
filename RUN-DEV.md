@@ -1,5 +1,11 @@
 # Lancer l'app avec rechargement automatique (dev)
 
+**Pour que le rechargement fonctionne :**
+1. L’app doit être lancée **avec le profil dev** (ex. `run-dev.bat`).
+2. Après une modification de code Java ou de `pom.xml`, il faut **recompiler** (`mvn compile`) pour que DevTools détecte le changement dans `target/classes` et redémarre. Utiliser le script `watch-compile.ps1` en 2ᵉ terminal pour le faire automatiquement.
+
+---
+
 ## Option 1 : Deux terminaux (recommandé)
 
 1. **Terminal 1** – Démarrer l’application en mode dev :
@@ -33,8 +39,16 @@
 
 - Lancer la classe `SoftApplication` avec le paramètre VM ou programme :  
   `--spring.profiles.active=dev`
-- La compilation à la sauvegarde + DevTools assurent le redémarrage automatique.
+- Activer la **compilation automatique** (Build Automatically / Compile on save) pour que chaque sauvegarde mette à jour `target/classes` et déclenche le redémarrage DevTools.
 
 ---
+
+## Dépannage : le rechargement ne se fait plus
+
+| Cause | Solution |
+|-------|----------|
+| App lancée sans profil dev | Utiliser `run-dev.bat` ou ajouter `--spring.profiles.active=dev` au lancement. |
+| Aucune recompilation après modification | Lancer `watch-compile.ps1` dans un 2ᵉ terminal, ou exécuter `mvn compile` après chaque modification. |
+| Depuis l’IDE | Vérifier que le profil `dev` est bien passé et que la compilation à la sauvegarde est activée. |
 
 **Profil dev** : désactive le cache Thymeleaf et active le restart + LiveReload DevTools.

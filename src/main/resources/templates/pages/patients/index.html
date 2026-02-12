@@ -198,6 +198,20 @@
       document.getElementById('date')?.setAttribute('value', today);
       document.getElementById('paramDate')?.setAttribute('value', today);
 
+      // Select2 pour le champ Nationalité (modal patient)
+      var nationaliteSelect = document.getElementById('nationalite');
+      if (nationaliteSelect && typeof $ !== 'undefined' && $.fn.select2) {
+        var $sel = $(nationaliteSelect);
+        if (!$sel.hasClass('select2-hidden-accessible')) {
+          $sel.wrap('<div class="position-relative"></div>').select2({
+            placeholder: 'Sélectionner une nationalité',
+            allowClear: true,
+            dropdownParent: $('#modalPatient'),
+            width: '100%'
+          });
+        }
+      }
+
       setupCalculations();
       setupPatientForm();
       setupParametresForm();
@@ -710,7 +724,11 @@
           document.getElementById('sexe').value = patient.sexe || '';
           document.getElementById('dateNaissance').value = patient.dateNaissance || '';
           document.getElementById('lieuNaissance').value = patient.lieuNaissance || '';
-          document.getElementById('nationalite').value = patient.nationalite || '';
+          var nationaliteEl = document.getElementById('nationalite');
+          if (nationaliteEl) {
+            nationaliteEl.value = patient.nationalite || '';
+            if ($(nationaliteEl).data('select2')) $(nationaliteEl).trigger('change');
+          }
           document.getElementById('groupe').value = patient.groupe || '';
           document.getElementById('adresse').value = patient.adresse || '';
           document.getElementById('ville').value = patient.ville || '';

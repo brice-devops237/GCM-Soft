@@ -66,8 +66,10 @@
                   <input type="text" class="form-control form-control-sm" name="adresse" id="adresse" />
                 </div>
                 <div class="col-12 col-sm-6">
-                  <label class="form-label">Nationalité</label>
-                  <input type="text" class="form-control form-control-sm" name="nationalite" id="nationalite" />
+                  <label for="nationalite" class="form-label">Nationalité</label>
+                  <select id="nationalite" name="nationalite" class="select2 form-select form-select-xsm" data-allow-clear="true">
+                    <th:block th:replace="~{fragments/patients/modals/modal-patient-nationalite-options :: nationaliteOptions}"></th:block>
+                  </select>
                 </div>
               </div>
               <div class="row g-2 mb-3">
@@ -173,19 +175,19 @@
                 </div>
               </div>
               <div class="table-responsive mb-3">
-                <table class="table table-sm table-bordered mb-0">
-                  <thead class="table-light">
+                <table class="table table-sm table-hover align-middle" style="font-size: 0.8rem;">
+                  <thead class="table-dark" style="font-size: 0.75rem;">
                     <tr>
-                      <th>Nom et prénom</th>
-                      <th>Lien de parenté</th>
-                      <th>Contact</th>
+                      <th class="text-white fw-bold" style="font-size: 0.75rem;">Nom(s)</th>
+                      <th class="text-white fw-bold" style="font-size: 0.75rem;">Relation</th>
+                      <th class="text-white fw-bold" style="font-size: 0.75rem;">Contact</th>
                     </tr>
                   </thead>
                   <tbody id="contactUrgenceTableBody">
                     <tr>
-                      <td id="contactNomDisplay" class="text-muted">—</td>
-                      <td id="contactRelationDisplay" class="text-muted">—</td>
-                      <td id="contactTelDisplay" class="text-muted">—</td>
+                      <td id="contactNomDisplay">—</td>
+                      <td id="contactRelationDisplay">—</td>
+                      <td id="contactTelDisplay">—</td>
                     </tr>
                   </tbody>
                 </table>

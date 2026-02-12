@@ -14,7 +14,7 @@
             <div class="w-100 d-flex justify-content-center">
                 <img th:src="@{/assets/img/illustrations/boy-with-rocket-light.png}" 
                      class="img-fluid"
-                     alt="Illustration GCM Soft" width="700"/>
+                     alt="Illustration GCM Soft" width="550"/>
             </div>
         </div>
         <!-- /Image de gauche -->
@@ -22,12 +22,12 @@
         <!-- Formulaire de connexion -->
         <div class="d-flex col-12 col-lg-5 col-xl-4 align-items-center authentication-bg p-6 p-sm-12">
             <div class="w-px-400 mx-auto mt-8 mt-sm-12">
-                
                 <h4 class="mb-1 text-center">GCM Soft ! 👋</h4>
                 <p class="mb-6 text-center">Connectez-vous pour accéder à votre espace</p>
 
-                <!-- Message d'erreur (flash) -->
-                <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+                <!-- Messages flash affichés en toast (pas d'alerte inline) -->
+                <div th:if="${error}" class="d-none" data-flash-toast="error" th:data-message="${error}"></div>
+                <div th:if="${success}" class="d-none" data-flash-toast="success" th:data-message="${success}"></div>
 
                 <!-- Formulaire de login : POST vers /auth/login pour authentification JWT -->
                 <form th:action="@{/auth/login}" method="post">
@@ -61,6 +61,28 @@
 
 <!-- Inclure les scripts JS via fragment Thymeleaf -->
 <div th:replace="~{fragments/js :: js}"></div>
+<script th:inline="javascript">
+  document.addEventListener('DOMContentLoaded', function () {
+    if (typeof window.AppToasts === 'undefined') return;
+    // Message quand redirection suite à token absent/invalide (session expirée)
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('session') === 'expired') {
+      window.AppToasts.error('Session expirée ou token invalide. Veuillez vous reconnecter.');
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+    // Messages flash (erreur login, déconnexion réussie, etc.)
+    var errorEl = document.querySelector('[data-flash-toast="error"]');
+    var successEl = document.querySelector('[data-flash-toast="success"]');
+    if (errorEl && errorEl.getAttribute('data-message')) {
+      window.AppToasts.error(errorEl.getAttribute('data-message'));
+    }
+    if (successEl && successEl.getAttribute('data-message')) {
+      window.AppToasts.success(successEl.getAttribute('data-message'));
+    }
+  });
+</script>
 
 </body>
 </html>
