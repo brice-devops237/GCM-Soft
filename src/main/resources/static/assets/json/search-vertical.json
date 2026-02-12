@@ -1,1 +1,30 @@
-[]
+{
+  "suggestions": {
+    "Navigation": [
+      {
+        "url": "/dashboard",
+        "name": "Tableau de bord",
+        "icon": "bx-home-circle"
+      },
+      {
+        "url": "/patients",
+        "name": "Patients",
+        "icon": "bx-user"
+      }
+    ]
+  },
+  "navigation": {
+    "Pages": [
+      {
+        "url": "/dashboard",
+        "name": "Tableau de bord",
+        "icon": "bx-home-circle"
+      },
+      {
+        "url": "/patients",
+        "name": "Patients",
+        "icon": "bx-user"
+      }
+    ]
+  }
+}

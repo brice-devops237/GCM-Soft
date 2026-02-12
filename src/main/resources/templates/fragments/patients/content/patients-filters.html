@@ -3,11 +3,21 @@
     <input type="date" class="form-control form-control-sm" id="filterDateDebut">
     <input type="date" class="form-control form-control-sm" id="filterDateFin">
   
-    <input type="text" class="form-control form-control-sm col-3"
-           id="filterCode" placeholder="Code patient">
-  
-    <input type="text" class="form-control form-control-sm"
-           id="filterSearch" placeholder="Nom et prénom">
+    <div class="input-group input-group-sm">
+      <input type="text" class="form-control form-control-sm"
+             id="filterCode" placeholder="Code patient">
+      <span class="input-group-text bg-transparent border-start-0 pe-2">
+        <i class="bx bx-barcode-alt text-body-secondary"></i>
+      </span>
+    </div>
+
+    <div class="input-group input-group-sm">
+      <input type="text" class="form-control form-control-sm"
+             id="filterSearch" placeholder="Nom et prénom">
+      <span class="input-group-text bg-transparent border-start-0 pe-2">
+        <i class="bx bx-search text-body-secondary"></i>
+      </span>
+    </div>
   
     <select id="filterSexe" class="form-select form-select-sm">
       <option value="">Tous</option>
