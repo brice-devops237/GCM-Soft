@@ -1,0 +1,2 @@
+-- Baseline Flyway : schéma géré par JPA/Hibernate (ddl-auto=update).
+-- Les migrations suivantes peuvent être ajoutées ici si vous passez en ddl-auto=validate.

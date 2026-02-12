@@ -26,19 +26,22 @@
                 <h4 class="mb-1 text-center">GCM Soft ! 👋</h4>
                 <p class="mb-6 text-center">Connectez-vous pour accéder à votre espace</p>
 
-                <!-- Formulaire de login -->
-                <form th:action="@{/dashboard}" method="get">
+                <!-- Message d'erreur (flash) -->
+                <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+
+                <!-- Formulaire de login : POST vers /auth/login pour authentification JWT -->
+                <form th:action="@{/auth/login}" method="post">
                     <div class="mb-4 form-control-validation">
-                        <label for="email" class="form-label">Email ou nom d'utilisateur</label>
+                        <label for="email" class="form-label">Login</label>
                         <input type="text" class="form-control" id="email" name="username"
-                               placeholder="Entrez votre email ou nom d'utilisateur" autofocus/>
+                               placeholder="Entrez votre login" autofocus required/>
                     </div>
 
                     <div class="mb-4 form-password-toggle form-control-validation">
                         <label for="password" class="form-label">Mot de passe</label>
                         <div class="input-group input-group-merge">
                             <input type="password" class="form-control" id="password" name="password"
-                                   placeholder="*****************" aria-describedby="password"/>
+                                   placeholder="*****************" aria-describedby="password" required/>
                             <span class="input-group-text cursor-pointer">
                                 <i class="icon-base bx bx-hide"></i>
                             </span>

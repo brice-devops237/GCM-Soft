@@ -20,6 +20,9 @@
             <!-- Content -->
             <div class="content-wrapper">
                 <div class="container-xxl flex-grow-1 container-p-y">
+                    <!-- Messages flash (connexion réussie, etc.) affichés en toast -->
+                    <div th:if="${success}" class="d-none" data-flash-toast="success" th:data-message="${success}"></div>
+                    <div th:if="${error}" class="d-none" data-flash-toast="error" th:data-message="${error}"></div>
                     <div class="row">
                         <!-- Contenu dashboard ici -->
                     </div>
@@ -38,6 +41,20 @@
 
 <!-- Scripts -->
 <div th:replace="~{fragments/js :: js}"></div>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var successEl = document.querySelector('[data-flash-toast="success"]');
+    var errorEl = document.querySelector('[data-flash-toast="error"]');
+    if (window.AppToasts) {
+      if (successEl && successEl.getAttribute('data-message')) {
+        window.AppToasts.success(successEl.getAttribute('data-message'));
+      }
+      if (errorEl && errorEl.getAttribute('data-message')) {
+        window.AppToasts.error(errorEl.getAttribute('data-message'));
+      }
+    }
+  });
+</script>
 
 </body>
 </html>

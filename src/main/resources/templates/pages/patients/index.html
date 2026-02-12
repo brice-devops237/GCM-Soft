@@ -133,7 +133,7 @@
 
   <!-- Modal de Confirmation -->
   <div class="modal fade" id="modalConfirm" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
       <div class="modal-content">
         <div class="modal-header" id="confirmModalHeader">
           <h5 class="modal-title" id="confirmModalTitle">Confirmation</h5>
@@ -160,6 +160,16 @@
     let currentPatientCode = null;
     let currentPatientName = null;
     let isParametreEditMode = false;
+
+    // Vérification 401 : redirection vers login et toast si session expirée
+    function checkAuthResponse(response) {
+      if (response.status === 401) {
+        if (window.AppToasts) window.AppToasts.error('Session expirée. Veuillez vous reconnecter.');
+        window.location.href = '/login';
+        throw new Error('Unauthorized');
+      }
+      return response;
+    }
 
     // Afficher les messages flash (success/error) en toasts et masquer les alertes inline
     function showFlashAsToasts() {
@@ -641,16 +651,37 @@
           const patientName = currentPatientName || 'le patient';
           const sourceEl = document.getElementById('source');
           const source = (sourceEl && sourceEl.value) ? sourceEl.value : 'non spécifiée';
+          const isEdit = isParametreEditMode;
 
-          showConfirmModal(
-            'Enregistrer les paramètres',
-            `Êtes-vous sûr de vouloir enregistrer les paramètres cliniques pour <strong>${patientName}</strong> ?<br><small class="text-muted">Source : ${source}</small>`,
-            function () {
-              // Soumission après fermeture du modal de confirmation pour éviter tout blocage
-              const form = document.getElementById('parametresForm');
-              if (form) setTimeout(function () { form.submit(); }, 150);
+          const confirmTitle = isEdit ? 'Modifier les paramètres' : 'Enregistrer les paramètres';
+          const confirmMessage = isEdit
+            ? `Êtes-vous sûr de vouloir <strong>modifier</strong> ces paramètres cliniques pour <strong>${patientName}</strong> ?<br><small class="text-muted">Source : ${source}</small>`
+            : `Êtes-vous sûr de vouloir enregistrer les paramètres cliniques pour <strong>${patientName}</strong> ?<br><small class="text-muted">Source : ${source}</small>`;
+
+          showConfirmModal(confirmTitle, confirmMessage, function () {
+            const form = document.getElementById('parametresForm');
+            if (!form) return;
+            if (isEdit) {
+              const formData = new FormData(form);
+              fetch('/parametres-patient/update', { method: 'POST', body: formData, credentials: 'same-origin' })
+                .then(checkAuthResponse)
+                .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+                .then(function (res) {
+                  if (res.data && res.data.success) {
+                    window.AppToasts && window.AppToasts.success(res.data.message || 'Les paramètres ont été modifiés avec succès.');
+                    bootstrap.Modal.getInstance(document.getElementById('modalParametres')).hide();
+                    if (currentPatientCode) loadParametres(currentPatientCode);
+                  } else {
+                    window.AppToasts && window.AppToasts.error(res.data && res.data.message ? res.data.message : 'Erreur lors de la modification.');
+                  }
+                })
+                .catch(function () {
+                  window.AppToasts && window.AppToasts.error('Erreur lors de la modification des paramètres.');
+                });
+            } else {
+              setTimeout(function () { form.submit(); }, 150);
             }
-          );
+          });
         });
       }
 
@@ -670,7 +701,8 @@
 
     // Éditer un patient
     function editPatient(id) {
-      fetch('/patients/api/' + id)
+      fetch('/patients/api/' + id, { credentials: 'same-origin' })
+        .then(checkAuthResponse)
         .then(response => response.json())
         .then(patient => {
           document.getElementById('patientId').value = patient.id;
@@ -775,7 +807,8 @@
 
     // Charge un paramètre par id et ouvre le modal en mode édition
     function editParametre(id) {
-      fetch('/parametres-patient/get/' + id)
+      fetch('/parametres-patient/get/' + id, { credentials: 'same-origin' })
+        .then(checkAuthResponse)
         .then(response => response.json())
         .then(function (p) {
           isParametreEditMode = true;
@@ -813,7 +846,8 @@
     }
 
     function loadParametres(codePatient) {
-      fetch('/parametres-patient/by-code?codePatient=' + encodeURIComponent(codePatient))
+      fetch('/parametres-patient/by-code?codePatient=' + encodeURIComponent(codePatient), { credentials: 'same-origin' })
+        .then(checkAuthResponse)
         .then(response => response.json())
         .then(data => {
           const tbody = document.getElementById('parametresTableBody');
@@ -898,7 +932,8 @@
         'Supprimer les paramètres',
         'Êtes-vous sûr de vouloir supprimer ces paramètres cliniques ?<br><small class="text-danger">Cette action est irréversible.</small>',
         function () {
-          fetch('/parametres-patient/delete/' + id, { method: 'GET' })
+          fetch('/parametres-patient/delete/' + id, { method: 'GET', credentials: 'same-origin' })
+            .then(checkAuthResponse)
             .then(response => {
               if (response.ok || response.redirected) {
                 if (currentPatientCode) {
@@ -996,10 +1031,10 @@
         fetch(url, {
           method: 'GET',
           signal: controller.signal,
-          headers: {
-            'Accept': 'application/json'
-          }
+          credentials: 'same-origin',
+          headers: { 'Accept': 'application/json' }
         })
+          .then(checkAuthResponse)
           .then(response => {
             if (!response.ok) throw new Error('Erreur de recherche');
             return response.json();
@@ -1012,6 +1047,7 @@
           .catch(error => {
             if (error.name !== 'AbortError') {
               console.error('Erreur lors de la recherche:', error);
+              if (window.AppToasts) window.AppToasts.error('Erreur lors de la recherche des patients.');
               filterSpinner.classList.add('d-none');
             }
             currentSearchRequest = null;
