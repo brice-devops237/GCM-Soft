@@ -74,6 +74,12 @@
         <div>Patients</div>
       </a>
     </li>
+    <li class="menu-item" th:classappend="${servletPath != null && #strings.startsWith(servletPath, '/rendez-vous')} ? ' active' : ''">
+      <a th:href="@{/rendez-vous}" class="menu-link">
+        <i class="menu-icon icon-base bx bx-calendar"></i>
+        <div>Rendez-vous</div>
+      </a>
+    </li>
     <li class="menu-item">
       <a href="javascript:void(0);" class="menu-link" role="button" th:attr="data-logout-url=@{/logout}" onclick="return confirmLogout(this);">
         <i class="menu-icon icon-base bx bx-door-open"></i>

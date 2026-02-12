@@ -1,0 +1,56 @@
+<div th:fragment="rendezVousTable" class="table-responsive">
+  <table class="table table-sm table-hover align-middle" id="tableRendezVous" style="font-size: 0.8rem;">
+    <thead class="table-dark" style="font-size: 0.75rem;">
+      <tr>
+        <th class="text-white fw-bold">Id</th>
+        <th class="text-white fw-bold">Code</th>
+        <th class="text-white fw-bold">Patient</th>
+        <th class="text-white fw-bold">Date</th>
+        <th class="text-white fw-bold">Traitant</th>
+        <th class="text-white fw-bold">Objet</th>
+        <th class="text-white fw-bold">Statut</th>
+        <th class="text-center text-white fw-bold">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="rendezVousTableBody">
+      <tr th:each="rv : ${rendezVousList}">
+        <td th:text="${rv.id}"></td>
+        <td th:text="${rv.code}"></td>
+        <td th:text="${codeToNom != null ? codeToNom[rv.code] : rv.code}"></td>
+        <td th:text="${rv.dateRendezVous != null && rv.heureRendezVous != null ? #temporals.format(rv.dateRendezVous, 'dd/MM/yyyy') + ' ' + #temporals.format(rv.heureRendezVous, 'HH:mm') : (rv.dateRendezVous != null ? #temporals.format(rv.dateRendezVous, 'dd/MM/yyyy') : '-')}"></td>
+        <td th:text="${rv.matTraitent}"></td>
+        <td><span th:text="${#strings.abbreviate(rv.objet, 40)}" th:title="${rv.objet}"></span></td>
+        <td>
+          <span th:if="${rv.statut == 0}">attente patient</span>
+          <span th:if="${rv.statut == 1}">attente traitant</span>
+          <span th:if="${rv.statut == 2}">Honoré</span>
+        </td>
+        <td class="text-center">
+          <div class="dropdown">
+            <button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-label="Actions">
+              <i class="bx bx-dots-vertical-rounded"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li>
+                <button type="button" class="dropdown-item btn-edit-rendezvous d-flex align-items-center" th:attr="data-id=${rv.id}">
+                  <i class="bx bx-edit me-2"></i> Modifier
+                </button>
+              </li>
+              <li>
+                <button type="button" class="dropdown-item btn-delete-rendezvous d-flex align-items-center text-danger" th:attr="data-id=${rv.id}">
+                  <i class="bx bx-trash me-2"></i> Supprimer
+                </button>
+              </li>
+            </ul>
+          </div>
+        </td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(rendezVousList)}">
+        <td colspan="8" class="text-center text-muted py-4">
+          <i class="bx bx-calendar-x fs-4 d-block mb-2"></i>
+          Aucun rendez-vous
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

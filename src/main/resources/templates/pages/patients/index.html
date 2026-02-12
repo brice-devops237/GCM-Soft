@@ -31,11 +31,15 @@
             <div class="card" id="patientsModuleCard">
               <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between mb-4">
-                  <!-- Bouton Ajouter -->
-                  <div>
+                  <!-- Bouton Ajouter + Guide -->
+                  <div class="d-flex align-items-center gap-2">
                     <button type="button" class="btn btn-primary btn-sm px-3" data-bs-toggle="modal"
                       data-bs-target="#modalPatient">
                       <span class="bx bx-plus-circle me-1"></span> Ajouter patient
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3 d-none" id="patientsTourTrigger"
+                      title="Démarrer le guide des actions">
+                      <span class="bx bx-guide me-1"></span> Guide
                     </button>
                   </div>
 
@@ -152,6 +156,7 @@
 
   <!-- Scripts -->
   <div th:replace="~{fragments/js :: js}"></div>
+  <script th:src="@{/assets/js/patients-tour.js}"></script>
 
   <script>
     // Variables globales
@@ -1160,6 +1165,11 @@
                       data-patient-name="${dataName}">
                       <i class="bx bx-clipboard me-2"></i> Paramètres
                     </button>
+                  </li>
+                  <li>
+                    <a href="/rendez-vous?codePatient=${code}&nouveau=1" class="dropdown-item d-flex align-items-center">
+                      <i class="bx bx-calendar me-2"></i> Rendez-vous
+                    </a>
                   </li>
                   <li>
                     <button type="button" class="dropdown-item btn-delete-patient d-flex align-items-center text-danger"

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fr" class="layout-navbar-fixed layout-menu-fixed layout-compact" data-bs-theme="light"
+  data-template="default" data-assets-path="/assets/">
+
+<head th:replace="~{fragments/head :: head}"></head>
+
+<body>
+  <div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+      <div th:replace="~{fragments/aside :: aside}"></div>
+      <div class="layout-page">
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+        <div class="content-wrapper">
+          <div class="container-xxl flex-grow-1 container-p-y">
+
+            <div th:if="${success}" class="alert alert-success d-none flash-message" role="alert" data-flash="success">
+              <span th:text="${success}"></span>
+            </div>
+            <div th:if="${error}" class="alert alert-danger d-none flash-message" role="alert" data-flash="error">
+              <span th:text="${error}"></span>
+            </div>
+
+            <div class="card" id="rendezVousModuleCard">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                  <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-primary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#modalRendezVous" id="btnNewRendezVous">
+                      <i class="bx bx-plus-circle me-1"></i> Ajouter
+                    </button>
+                  </div>
+                  <div th:replace="~{fragments/rendez-vous/content/rendez-vous-filters :: rendezVousFilters}"></div>
+                </div>
+
+                <div th:replace="~{fragments/rendez-vous/content/rendez-vous-table :: rendezVousTable}"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div th:replace="~{fragments/footer :: footer}"></div>
+      </div>
+    </div>
+  </div>
+
+  <div th:replace="~{fragments/rendez-vous/modals/modal-rendez-vous}"></div>
+  <div th:replace="~{fragments/rendez-vous/modals/modal-confirm-rendez-vous}"></div>
+  <div th:replace="~{fragments/patients/modals/modal-patient}"></div>
+
+  <div th:replace="~{fragments/js :: js}"></div>
+
+  <script th:inline="javascript">
+    (function() {
+      var API_SEARCH = /*[[@{/rendez-vous/api/search}]]*/ '/rendez-vous/api/search';
+      var API_GET = /*[[@{/rendez-vous/api/{id}(id=0)}]]*/ '/rendez-vous/api/0';
+      var API_AUTOCOMPLETE = /*[[@{/rendez-vous/api/patients/autocomplete}]]*/ '/rendez-vous/api/patients/autocomplete';
+      var form = document.getElementById('formRendezVous');
+      var formActionCreate = /*[[@{/rendez-vous/create}]]*/ '/rendez-vous/create';
+
+      function checkAuth(r) {
+        if (r.status === 401) {
+          if (window.AppToasts) window.AppToasts.error('Session expirée. Veuillez vous reconnecter.');
+          window.location.href = '/login';
+          throw new Error('Unauthorized');
+        }
+        return r;
+      }
+
+      function showFlashAsToasts() {
+        if (typeof window.AppToasts === 'undefined') return;
+        var successEl = document.querySelector('.flash-message.alert-success');
+        if (successEl && successEl.querySelector('span')) {
+          window.AppToasts.success(successEl.querySelector('span').textContent.trim());
+          successEl.remove();
+        }
+        var errorEl = document.querySelector('.flash-message.alert-danger');
+        if (errorEl && errorEl.querySelector('span')) {
+          window.AppToasts.error(errorEl.querySelector('span').textContent.trim());
+          errorEl.remove();
+        }
+      }
+
+      function clearRvErrors() {
+        ['rvCode', 'rvDate', 'rvHeure', 'rvMatTraitent', 'rvObjet'].forEach(function(id) {
+          var el = document.getElementById(id);
+          if (el) el.classList.remove('is-invalid');
+          var err = document.getElementById('error-' + id);
+          if (err) err.textContent = '';
+        });
+      }
+
+      function setRvError(id, message) {
+        var el = document.getElementById(id);
+        if (el) el.classList.add('is-invalid');
+        var err = document.getElementById('error-' + id);
+        if (err) err.textContent = message || 'Champ invalide';
+      }
+
+      function validateRvForm() {
+        clearRvErrors();
+        var valid = true;
+        var codeEl = document.getElementById('rvCode');
+        var codeVal = (typeof $ !== 'undefined' && $(codeEl).data('select2')) ? $(codeEl).val() : codeEl.value;
+        if (!codeVal || !codeVal.trim()) { setRvError('rvCode', 'Veuillez sélectionner un patient.'); valid = false; }
+        var dateStr = document.getElementById('rvDate').value;
+        var timeStr = document.getElementById('rvHeure').value;
+        if (!dateStr) { setRvError('rvDate', 'La date est obligatoire.'); valid = false; }
+        if (!timeStr) { setRvError('rvHeure', 'L\'heure est obligatoire.'); valid = false; }
+        var isNew = !document.getElementById('rvId').value;
+        if (isNew && dateStr && timeStr) {
+          var rdvDt = new Date(dateStr + 'T' + timeStr.substring(0, 5) + ':00');
+          var minDt = new Date(Date.now() + 5 * 60 * 1000);
+          if (rdvDt.getTime() < minDt.getTime()) {
+            setRvError('rvDate', 'La date et l\'heure doivent être au moins 5 minutes dans le futur.');
+            setRvError('rvHeure', '');
+            valid = false;
+          }
+        }
+        var mat = document.getElementById('rvMatTraitent').value.trim();
+        if (!mat) { setRvError('rvMatTraitent', 'Le médecin traitant est obligatoire.'); valid = false; }
+        if (mat.length > 100) { setRvError('rvMatTraitent', 'Maximum 100 caractères.'); valid = false; }
+        var objet = document.getElementById('rvObjet').value.trim();
+        if (!objet) { setRvError('rvObjet', 'L\'objet du rendez-vous est obligatoire.'); valid = false; }
+        if (objet.length > 500) { setRvError('rvObjet', 'Maximum 500 caractères.'); valid = false; }
+        return valid;
+      }
+
+      function initSelect2Patient() {
+        var sel = document.getElementById('rvCode');
+        if (!sel || typeof $ === 'undefined' || !$.fn.select2) return;
+        if ($(sel).data('select2')) return;
+        var ajaxUrl = sel.getAttribute('data-ajax-url') || API_AUTOCOMPLETE;
+        $(sel).select2({
+          placeholder: sel.getAttribute('data-placeholder') || 'Rechercher par code ou nom...',
+          allowClear: true,
+          dropdownParent: $('#modalRendezVous'),
+          width: '100%',
+          minimumInputLength: 0,
+          ajax: {
+            url: ajaxUrl,
+            dataType: 'json',
+            delay: 200,
+            data: function(params) { return { q: params.term || '' }; },
+            processResults: function(data) {
+              var results = data.results || [];
+              return { results: results };
+            },
+            cache: true
+          }
+        });
+      }
+
+      function destroySelect2Patient() {
+        var sel = document.getElementById('rvCode');
+        if (sel && typeof $ !== 'undefined' && $(sel).data('select2')) {
+          $(sel).off('select2:select').select2('destroy');
+        }
+      }
+
+      document.getElementById('btnAddPatientFromRv').addEventListener('click', function() {
+        var redirectEl = document.getElementById('patientRedirectAfter');
+        if (redirectEl) redirectEl.value = 'rendez-vous';
+        var modalRv = bootstrap.Modal.getInstance(document.getElementById('modalRendezVous'));
+        if (modalRv) modalRv.hide();
+        var modalPatient = new bootstrap.Modal(document.getElementById('modalPatient'));
+        modalPatient.show();
+      });
+
+      document.getElementById('modalPatient').addEventListener('hidden.bs.modal', function() {
+        var redirectEl = document.getElementById('patientRedirectAfter');
+        if (redirectEl) redirectEl.value = '';
+      });
+
+      document.getElementById('rvObjet').addEventListener('input', function() {
+        var n = (this.value || '').length;
+        var el = document.getElementById('rvObjetCount');
+        if (el) el.textContent = n;
+      });
+
+      document.getElementById('modalRendezVous').addEventListener('show.bs.modal', function() {
+        var id = document.getElementById('rvId').value;
+        if (!id) {
+          document.getElementById('modalRendezVousTitle').textContent = 'Enregistrement d\'un nouveau rendez-vous';
+          form.setAttribute('action', formActionCreate);
+          form.reset();
+          document.getElementById('rvId').value = '';
+          var rvObjetCountEl = document.getElementById('rvObjetCount');
+          if (rvObjetCountEl) rvObjetCountEl.textContent = '0';
+          var today = new Date().toISOString().split('T')[0];
+          document.getElementById('rvDate').value = today;
+          var now = new Date();
+          document.getElementById('rvHeure').value = (now.getHours() < 10 ? '0' : '') + now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+          document.getElementById('rvStatut').value = '0';
+          clearRvErrors();
+          destroySelect2Patient();
+          var sel = document.getElementById('rvCode');
+          sel.innerHTML = '<option value=""></option>';
+          setTimeout(function() {
+            initSelect2Patient();
+            var codeParam = new URLSearchParams(window.location.search).get('codePatient');
+            if (codeParam && typeof $ !== 'undefined') {
+              var $sel = $('#rvCode');
+              if ($sel.data('select2')) {
+                var opt = new Option(codeParam + ' - ', codeParam, true, true);
+                $sel.append(opt).trigger('change');
+              }
+            }
+          }, 100);
+        }
+      });
+
+      document.getElementById('modalRendezVous').addEventListener('shown.bs.modal', function() {
+        if (!document.getElementById('rvId').value) initSelect2Patient();
+      });
+
+      form.addEventListener('submit', function(e) {
+        if (!validateRvForm()) {
+          e.preventDefault();
+          if (window.AppToasts) window.AppToasts.warning('Veuillez corriger les champs signalés.');
+          return;
+        }
+      });
+
+      function performSearch() {
+        var dateDebut = document.getElementById('filterDateDebut').value;
+        var dateFin = document.getElementById('filterDateFin').value;
+        var codePatient = document.getElementById('filterCodePatient').value.trim();
+        var statut = document.getElementById('filterStatut').value;
+        document.getElementById('filterSpinner').classList.remove('d-none');
+        var params = new URLSearchParams();
+        if (codePatient) params.append('codePatient', codePatient);
+        if (dateDebut) params.append('dateDebut', dateDebut);
+        if (dateFin) params.append('dateFin', dateFin);
+        if (statut !== '') params.append('statut', statut);
+        var url = params.toString() ? API_SEARCH + '?' + params.toString() : API_SEARCH;
+        fetch(url, { method: 'GET', credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+          .then(checkAuth)
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            updateTable(data);
+            document.getElementById('filterSpinner').classList.add('d-none');
+          })
+          .catch(function(err) {
+            if (err.message !== 'Unauthorized' && window.AppToasts) window.AppToasts.error('Erreur lors de la recherche.');
+            document.getElementById('filterSpinner').classList.add('d-none');
+          });
+      }
+
+      function formatDate(d) {
+        if (!d) return '-';
+        return new Date(d).toLocaleDateString('fr-FR');
+      }
+      function formatTime(d) {
+        if (!d) return '-';
+        if (typeof d === 'string' && d.length >= 5) return d.substring(0, 5);
+        return d;
+      }
+      function formatDateTime(datePart, timePart) {
+        if (!datePart) return '-';
+        var d = new Date(datePart);
+        var dateStr = d.toLocaleDateString('fr-FR');
+        if (!timePart) return dateStr;
+        var timeStr = typeof timePart === 'string' && timePart.length >= 5 ? timePart.substring(0, 5) : timePart;
+        return dateStr + ' ' + timeStr;
+      }
+      function statutLabel(s) {
+        if (s === 0) return 'En attente patient';
+        if (s === 1) return 'En attente traitant';
+        if (s === 2) return 'Honoré';
+        return '-';
+      }
+      function statutClass(s) {
+        if (s === 0) return 'bg-danger';
+        if (s === 1) return 'bg-warning text-dark';
+        if (s === 2) return 'bg-success';
+        return 'bg-secondary';
+      }
+      function escapeHtml(t) {
+        if (t == null) return '';
+        var d = document.createElement('div');
+        d.textContent = t;
+        return d.innerHTML;
+      }
+
+      function updateTable(list) {
+        var tbody = document.getElementById('rendezVousTableBody');
+        if (!tbody) return;
+        if (!list || list.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4"><i class="bx bx-calendar-x fs-4 d-block mb-2"></i>Aucun rendez-vous</td></tr>';
+          return;
+        }
+        var html = list.map(function(r) {
+          var nom = r.nomPatient || r.code;
+          var objetShort = (r.objet || '').length > 40 ? (r.objet.substring(0, 40) + '...') : (r.objet || '');
+          var dateTimeStr = formatDateTime(r.dateRendezVous, r.heureRendezVous);
+          return '<tr><td>' + r.id + '</td><td>' + escapeHtml(r.code) + '</td><td>' + escapeHtml(nom) + '</td><td>' + dateTimeStr + '</td><td>' + escapeHtml(r.matTraitent || '') + '</td><td title="' + escapeHtml(r.objet || '') + '">' + escapeHtml(objetShort) + '</td><td><span class="badge ' + statutClass(r.statut) + '">' + statutLabel(r.statut) + '</span></td><td class="text-center"><div class="dropdown"><button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button><ul class="dropdown-menu dropdown-menu-end"><li><button type="button" class="dropdown-item btn-edit-rendezvous d-flex align-items-center" data-id="' + r.id + '"><i class="bx bx-edit me-2"></i> Modifier</button></li><li><button type="button" class="dropdown-item btn-delete-rendezvous d-flex align-items-center text-danger" data-id="' + r.id + '"><i class="bx bx-trash me-2"></i> Supprimer</button></li></ul></div></td></tr>';
+        }).join('');
+        tbody.innerHTML = html;
+        bindTableActions();
+      }
+
+      function bindTableActions() {
+        var table = document.getElementById('tableRendezVous');
+        if (!table) return;
+        table.removeEventListener('click', table._rvClick);
+        table._rvClick = function(e) {
+          if (e.target.closest('.btn-edit-rendezvous')) {
+            editRendezVous(parseInt(e.target.closest('.btn-edit-rendezvous').getAttribute('data-id'), 10));
+          }
+          if (e.target.closest('.btn-delete-rendezvous')) {
+            confirmDelete(parseInt(e.target.closest('.btn-delete-rendezvous').getAttribute('data-id'), 10));
+          }
+        };
+        table.addEventListener('click', table._rvClick);
+      }
+
+      function editRendezVous(id) {
+        fetch(API_GET.replace('/0', '/' + id), { credentials: 'same-origin' })
+          .then(checkAuth)
+          .then(function(r) { return r.json(); })
+          .then(function(r) {
+            document.getElementById('rvId').value = r.id;
+            document.getElementById('rvDate').value = r.dateRendezVous || '';
+            document.getElementById('rvHeure').value = (r.heureRendezVous || '').toString().substring(0, 5);
+            document.getElementById('rvMatTraitent').value = r.matTraitent || '';
+            document.getElementById('rvObjet').value = r.objet || '';
+            document.getElementById('rvStatut').value = r.statut != null ? r.statut : 0;
+            var rvObjetCountEl = document.getElementById('rvObjetCount');
+            if (rvObjetCountEl) rvObjetCountEl.textContent = (r.objet || '').length;
+            var modalTitleEl = document.getElementById('modalRendezVousTitle');
+            if (modalTitleEl) modalTitleEl.textContent = 'Modifier le rendez-vous';
+            form.setAttribute('action', '/rendez-vous/edit/' + id);
+            clearRvErrors();
+            destroySelect2Patient();
+            var codeOpt = new Option(r.code + ' - ', r.code, true, true);
+            document.getElementById('rvCode').innerHTML = '';
+            document.getElementById('rvCode').appendChild(codeOpt);
+            var modal = new bootstrap.Modal(document.getElementById('modalRendezVous'));
+            modal.show();
+          })
+          .catch(function() {
+            if (window.AppToasts) window.AppToasts.error('Impossible de charger le rendez-vous.');
+          });
+      }
+
+      function confirmDelete(id) {
+        document.getElementById('modalConfirmRvMessage').textContent = 'Êtes-vous sûr de vouloir supprimer ce rendez-vous ?';
+        var btn = document.getElementById('modalConfirmRvBtn');
+        var newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+        newBtn.onclick = function() {
+          bootstrap.Modal.getInstance(document.getElementById('modalConfirmRv')).hide();
+          window.location.href = '/rendez-vous/delete/' + id;
+        };
+        new bootstrap.Modal(document.getElementById('modalConfirmRv')).show();
+      }
+
+      var searchTimeout = null;
+      function debouncedSearch() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(performSearch, 250);
+      }
+      var filterDateDebut = document.getElementById('filterDateDebut');
+      var filterDateFin = document.getElementById('filterDateFin');
+      var filterCodePatient = document.getElementById('filterCodePatient');
+      var filterStatut = document.getElementById('filterStatut');
+      if (filterDateDebut) filterDateDebut.addEventListener('change', performSearch);
+      if (filterDateFin) filterDateFin.addEventListener('change', performSearch);
+      if (filterCodePatient) filterCodePatient.addEventListener('input', debouncedSearch);
+      if (filterStatut) filterStatut.addEventListener('change', performSearch);
+
+      bindTableActions();
+      showFlashAsToasts();
+      performSearch();
+
+      var codePatientFromUrl = new URLSearchParams(window.location.search).get('codePatient');
+      if (codePatientFromUrl) {
+        filterCodePatient.value = codePatientFromUrl;
+        performSearch();
+        if (new URLSearchParams(window.location.search).get('nouveau') === '1') {
+          setTimeout(function() { document.getElementById('btnNewRendezVous').click(); }, 300);
+        }
+      }
+    })();
+  </script>
+</body>
+</html>

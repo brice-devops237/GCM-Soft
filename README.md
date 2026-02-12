@@ -230,11 +230,20 @@ src/main/resources/
 
 Champs gérés (entre autres) : date, heure, PAM (ta), FC, FR, température, SaO2, PAS, PAD, poids, taille, IMC, source, DDR, autres.
 
+### Rendez-vous
+
+- **Liste** : `GET /rendez-vous` avec filtres (période, code patient, statut). Recherche AJAX via `GET /rendez-vous/api/search?...`.
+- **Création** : formulaire modal (patient, date, heure, médecin traitant, objet, statut). `POST /rendez-vous/create`. L’utilisateur connecté est enregistré dans le champ `user`.
+- **Modification** : chargement `GET /rendez-vous/api/{id}`, soumission `POST /rendez-vous/edit/{id}`.
+- **Suppression** : `GET /rendez-vous/delete/{id}` après confirmation dans un modal.
+- **Statuts** : 0 = En attente du patient, 1 = En attente du traitant, 2 = Rendez-vous honoré.
+- **Lien depuis les patients** : dans le menu Actions de chaque ligne, lien « Rendez-vous » vers `/rendez-vous?codePatient=...&nouveau=1` (ouvre la page avec le patient pré-sélectionné et le modal « Nouveau » ouvert).
+
 ---
 
 ## Interface utilisateur (menu, profil, déconnexion)
 
-- **Menu latéral (aside)** : lien « Tableau de bord » vers `/dashboard`, lien « Patients » vers `/patients`. L’élément actif est déterminé par le chemin de la requête (`servletPath`) fourni par `CurrentUserModelAdvice`.
+- **Menu latéral (aside)** : lien « Tableau de bord » vers `/dashboard`, lien « Patients » vers `/patients`, lien « Rendez-vous » vers `/rendez-vous`. L’élément actif est déterminé par le chemin de la requête (`servletPath`) fourni par `CurrentUserModelAdvice`.
 - **Profil (navbar)** : affichage du **login** de l’utilisateur connecté (pas le rôle dans ce bloc). Données injectées via `CurrentUserModelAdvice` (`username`, `servletPath`).
 - **Déconnexion** : liens « Déconnexion » (aside et profil) ouvrent un **modal de confirmation** avant redirection vers `/logout`. Le cookie JWT est supprimé, un message flash « Déconnexion réussie » peut être affiché sur la page de login.
 - **Session expirée** : si le JWT est invalide ou expiré, le filtre redirige vers `/login?session=expired` ; la page login affiche un toast d’erreur puis nettoie l’URL.
@@ -312,6 +321,13 @@ Champs gérés (entre autres) : date, heure, PAM (ta), FC, FR, température, SaO
 | GET | `/parametres-patient/get/{id}` | Détail paramètres (JSON) |
 | POST | `/parametres-patient/update` | Mise à jour paramètres (JSON) |
 | GET | `/parametres-patient/delete/{id}` | Suppression paramètres |
+| GET | `/rendez-vous` | Page gestion des rendez-vous (liste, filtres) |
+| GET | `/rendez-vous/api/search?...` | Recherche rendez-vous (JSON : codePatient, dateDebut, dateFin, statut) |
+| GET | `/rendez-vous/api/{id}` | Détail rendez-vous (JSON) |
+| GET | `/rendez-vous/api/patients` | Liste des patients actifs (JSON, pour le formulaire) |
+| POST | `/rendez-vous/create` | Création rendez-vous |
+| POST | `/rendez-vous/edit/{id}` | Modification rendez-vous |
+| GET | `/rendez-vous/delete/{id}` | Suppression rendez-vous |
 | POST | `/api/auth/login` | Connexion API (JSON) → token |
 | GET | `/api/auth/me` | Utilisateur connecté (JSON) |
 

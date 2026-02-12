@@ -1,0 +1,17 @@
+<div th:fragment="rendezVousFilters" class="d-flex align-items-center gap-2">
+  <div class="input-group input-group-sm">
+    <input type="date" class="form-control" id="filterDateDebut" />
+    <span class="input-group-text px-2">au</span>
+    <input type="date" class="form-control" id="filterDateFin" />
+  </div>
+  <input type="text" class="form-control form-control-sm" id="filterCodePatient" placeholder="Code patient" />
+  <select class="form-select form-select-sm" id="filterStatut" style="width: auto;">
+    <option value="">Tous les statuts</option>
+    <option value="0">En attente du patient</option>
+    <option value="1">En attente du traitant</option>
+    <option value="2">Rendez-vous honoré</option>
+  </select>
+  <div class="spinner-border spinner-border-sm d-none" id="filterSpinner" role="status" style="width: 1rem; height: 1rem;">
+    <span class="visually-hidden">Chargement...</span>
+  </div>
+</div>

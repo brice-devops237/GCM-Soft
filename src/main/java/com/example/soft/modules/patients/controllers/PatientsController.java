@@ -79,11 +79,15 @@ public class PatientsController {
 
     @PostMapping("/create")
     public String createPatient(@ModelAttribute PatientsModel patient,
+                                @RequestParam(required = false) String redirectAfter,
                                 RedirectAttributes redirectAttributes,
                                 Model model) {
         try {
-            patientsService.createPatient(patient);
+            PatientsModel saved = patientsService.createPatient(patient);
             redirectAttributes.addFlashAttribute("success", "Patient créé avec succès !");
+            if ("rendez-vous".equals(redirectAfter) && saved != null && saved.getCode() != null) {
+                return "redirect:/rendez-vous?codePatient=" + saved.getCode() + "&nouveau=1";
+            }
             return "redirect:/patients";
         } catch (IllegalArgumentException ex) {
             // Extraire le nom du champ depuis le message d'erreur

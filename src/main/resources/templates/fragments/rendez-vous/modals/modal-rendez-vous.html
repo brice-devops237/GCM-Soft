@@ -1,0 +1,72 @@
+<div class="modal fade" id="modalRendezVous" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header flex-shrink-0">
+        <h5 class="modal-title" id="modalRendezVousTitle">Enregistrement d'un nouveau rendez-vous</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <form id="formRendezVous" method="post" th:action="@{/rendez-vous/create}" class="d-flex flex-column">
+        <input type="hidden" name="id" id="rvId" />
+        <div class="modal-body">
+          <div class="mb-3" id="rvPatientBlock">
+            <label for="rvCode" class="form-label">Patient <span class="text-danger">*</span></label>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <div class="flex-grow-1" style="min-width: 0;">
+                <select name="code" id="rvCode" class="form-select form-select-sm select2 select2-rv-patient" required
+                  data-placeholder="Rechercher par code ou nom..."
+                  data-allow-clear="true"
+                  th:attr="data-ajax-url=@{/rendez-vous/api/patients/autocomplete}">
+                  <option value=""></option>
+                </select>
+                <div class="invalid-feedback" id="error-rvCode"></div>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline-secondary flex-shrink-0" id="btnAddPatientFromRv"
+                title="Ouvrir le formulaire d'ajout de patient">
+                <i class="bx bx-user-plus me-1"></i> Ajouter un patient
+              </button>
+            </div>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-12 col-sm-6">
+              <label for="rvDate" class="form-label">Date du rendez-vous <span class="text-danger">*</span></label>
+              <input type="date" class="form-control form-control-sm" name="dateRendezVous" id="rvDate" required />
+              <div class="invalid-feedback" id="error-rvDate"></div>
+            </div>
+            <div class="col-12 col-sm-6">
+              <label for="rvHeure" class="form-label">Heure du rendez-vous <span class="text-danger">*</span></label>
+              <input type="time" class="form-control form-control-sm" name="heureRendezVous" id="rvHeure" required />
+              <div class="invalid-feedback" id="error-rvHeure"></div>
+            </div>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-12 col-sm-6">
+              <label for="rvMatTraitent" class="form-label">Médecin traitant <span class="text-danger">*</span></label>
+              <input type="text" class="form-control form-control-sm" name="matTraitent" id="rvMatTraitent"
+                placeholder="Nom du médecin" required maxlength="100" />
+              <div class="invalid-feedback" id="error-rvMatTraitent"></div>
+            </div>
+            <div class="col-12 col-sm-6">
+              <label for="rvStatut" class="form-label">Statut</label>
+              <select class="form-select form-select-sm" name="statut" id="rvStatut">
+                <option value="0">attente patient</option>
+                <option value="1">attente traitant</option>
+                <option value="2">Honoré</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="rvObjet" class="form-label">Objet du rendez-vous <span class="text-danger">*</span></label>
+            <textarea class="form-control form-control-sm" name="objet" id="rvObjet" rows="4" required maxlength="500"
+              placeholder="Motif ou objet du rendez-vous"></textarea>
+            <div class="invalid-feedback" id="error-rvObjet"></div>
+            <!-- <div class="form-text"><span id="rvObjetCount">0</span> / 500</div> -->
+          </div>
+        </div>
+        <div class="modal-footer flex-shrink-0">
+          <button type="button" class="btn btn-label-danger btn-sm" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary btn-sm" id="btnSubmitRv"><i class="bx bx-save me-1"></i>Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

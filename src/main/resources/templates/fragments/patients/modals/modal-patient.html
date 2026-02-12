@@ -8,6 +8,7 @@
 
       <form id="patientForm" th:action="@{/patients/create}" method="post" class="d-flex flex-column flex-grow-1"
         style="min-height: 0;">
+        <input type="hidden" id="patientRedirectAfter" name="redirectAfter" value="" />
         <div class="modal-body p-4 overflow-y-auto flex-grow-1" style="min-height: 0; max-height: calc(90vh - 140px);">
           <input type="hidden" id="patientId" name="id" />
           <input type="hidden" name="date" id="date" />

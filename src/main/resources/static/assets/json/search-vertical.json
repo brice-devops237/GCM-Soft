@@ -10,6 +10,11 @@
         "url": "/patients",
         "name": "Patients",
         "icon": "bx-user"
+      },
+      {
+        "url": "/rendez-vous",
+        "name": "Rendez-vous",
+        "icon": "bx-calendar"
       }
     ]
   },
@@ -24,6 +29,11 @@
         "url": "/patients",
         "name": "Patients",
         "icon": "bx-user"
+      },
+      {
+        "url": "/rendez-vous",
+        "name": "Rendez-vous",
+        "icon": "bx-calendar"
       }
     ]
   }

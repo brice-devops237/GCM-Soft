@@ -47,6 +47,11 @@
                 </button>
               </li>
               <li>
+                <a th:href="@{/rendez-vous(codePatient=${patient.code}, nouveau=1)}" class="dropdown-item d-flex align-items-center">
+                  <i class="bx bx-calendar me-2"></i> Rendez-vous
+                </a>
+              </li>
+              <li>
                 <button type="button" class="dropdown-item btn-delete-patient d-flex align-items-center text-danger"
                   th:data-patient-id="${patient.id}" th:data-patient-name="${patient.noms}">
                   <i class="bx bx-trash me-2"></i> Supprimer
